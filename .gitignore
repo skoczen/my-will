@@ -36,3 +36,5 @@ nosetests.xml
 .pydevproject
 
 shelf.db
+
+.dewey_autocomplete.sh
