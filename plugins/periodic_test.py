@@ -6,6 +6,6 @@ from will import settings
 
 class RandomTestPlugin(WillPlugin):
 
-    @random(start_hour=13, end_hour=15, num_times_per_day=110, day_of_week="fri")
+    @randomly(start_hour=13, end_hour=15, num_times_per_day=110, day_of_week="fri")
     def random_test(self):
         print "yo" 
