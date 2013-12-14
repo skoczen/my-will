@@ -5,5 +5,5 @@ from will.decorators import respond_to, periodic, hear, randomly, route, rendere
 class SayPlugin(WillPlugin):
 
     @route("/say/<phrase>")
-    def say(self, phrase):
+    def say_listener(self, phrase):
         self.say(phrase)
