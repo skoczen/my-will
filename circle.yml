@@ -1,6 +1,6 @@
 test:
   override:
-    - /home/ubuntu/will/scripts/test_run.sh
+    - /home/ubuntu/our-will/scripts/test_run.sh
     # - nose test
 deployment:
   production:
