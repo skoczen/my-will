@@ -57,12 +57,12 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
             self.say("You didn't say which branch to stage.", message=message)
         else:
             context = {}
-            servers_html = rendered_template("active_staging_stacks.html", context)
+            # servers_html = rendered_template("active_staging_stacks.html", context)
             self.say("Sorry, I don't know how to do that yet.", message=message)
     
     @periodic(hour='17', minute='0', second='0', day_of_week="mon-fri")
     def remind_staging_servers(self):
         print "remind_staging_servers"
         context = {}
-        servers_html = rendered_template("active_staging_server_reminder.html", context)
+        # servers_html = rendered_template("active_staging_server_reminder.html", context)
         # self.say(servers_html, html=True)

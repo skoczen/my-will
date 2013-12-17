@@ -40,6 +40,23 @@ BIGGEST_FISH_NAMES = [
     "atlantic torpedo",
 ]
 
+class Stack(object):
+
+    def __init__(self, stack_info):
+        pass
+
+    def ensure_created(self):
+        pass
+
+    def deploy(self, branch):
+        pass
+
+    def destroy(self):
+        pass
+
+    def get_monthly_cost(self):
+        pass
+
 class ServersMixin(object):
     
     @property
