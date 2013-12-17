@@ -1,5 +1,5 @@
 {% if repos %}{% for r in repos %}
-<b><a href="{{r.url}}">{{r.name}}</a>:</b>
+{% if not loop.first %}&nbsp;&nbsp;{% endif %}<b><a href="{{r.url}}">{{r.name}}</a>:</b>
 <ul>
     {% for b in r.branches %}
     <li><a href="{{b.url}}">{{b.name}}</a></li>

@@ -1,8 +1,8 @@
 {% if stacks %}
 {# Here's what's up: #}
 <ul>
-{% for s in server %}
-<li><a href="{{s.url}}">{{s.name}}</a>: {{s.branch}} 
+{% for s in stacks %}
+<li><a href="{{s.url}}">{{s.title}}</a>: {{s.branch.name}} 
 {% endfor %}
 </ul>
 {% else %}

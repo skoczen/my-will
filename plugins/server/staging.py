@@ -19,7 +19,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
         branches_html = rendered_template("available_branches.html", context)
         self.say(branches_html, message=message, html=True)
 
-    @respond_to("(?:^what branches do we have open\?|^(?:list|show) (?:all )? branches)")
+    @respond_to("(?:^what branches do we have open\?|^(?:list|show) (?:all )?branches)")
     def all_branches(self, message):
         print "all_branches"
         repos = self.get_github_all_repos()
@@ -28,14 +28,13 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
         self.say(branches_html, message=message, html=True)
 
     
-    @respond_to("(?:^what staging stacks (?:do we have|are there)\?|^list stacks)")
+    @respond_to("(?:^what (?:staging )?stacks (?:do we have|are there)\?|^list stacks)")
     def active_staging_stacks(self, message):
-        print "active_staging_stacks"
-        context = {}
+        context = {"stacks": self.stacks}
         branches_html = rendered_template("active_staging_stacks.html", context)
         self.say(branches_html, message=message, html=True)
     
-    @respond_to("make a new staging stack for (?P<branch_name>[\w-]*)")
+    @respond_to("new (?:staging )?stack for (?P<branch_name>.*)")
     def start_staging(self, message, branch_name=None):
         if not branch_name:
             self.say("You didn't say which branch to stage.", message=message)
@@ -47,22 +46,64 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
             branches_text = "\n-%s".join(branch)
             self.say("Found multiple matches. %s" % branches_text, message=message)
         else:
-            new_name = self.get_unused_stack_name()
-            # self.say("Making a new stack at http://%s.herokuapp.com/" % new_name["url"], message=message) 
-            self.say("Good news: I found the branch you want.\nBad news: I don't know how to do that yet.", message=message)
+            self.say("Making a new stack for %s" % branch_name, message=message) 
+            stack = self.new_stack(branch)
+            self.say("Stack created and initialized. %s" % (stack.url, ), message=message)
+            
+
+    @respond_to("redeploy (?P<branch_or_stack_name>.*)")
+    def redeploy(self, message, branch_or_stack_name=None):
+        if not branch_or_stack_name:
+            self.say("You didn't say which branch or stack to redeploy.", message=message)
+
+        do_deploy = False
+        stack = None
+        branch = self.get_branch_from_branch_name(branch_or_stack_name, is_deployable=True)
+        if not branch:
+            stack = self.get_stack_from_stack_name(branch_or_stack_name)
+            if not stack:
+                self.say("Can't find a branch or stack named %s" % branch_or_stack_name, message=message)
+
+            if stack:
+                branch = stack.branch
+                do_deploy = True
+                stack.deploy(stack.branch)
+        elif type(branch) is type([]):
+            branches_text = "\n-%s".join(branch)
+            self.say("Found multiple matches. %s" % branches_text, message=message)
+        elif branch:
+            stack = self.get_stack_from_branch_name(branch_or_stack_name)
+            if not stack:
+                self.say("We don't have a deployed stack of %s.  To create one, say \"make a new stack for %s\"" %
+                    (branch_or_stack_name, branch_or_stack_name)
+                )
+            elif type(stack) is type([]):
+                stacks_text = "\n-%s".join(stack)
+                self.say("Found multiple matches. %s" % stacks_text, message=message)
+            else:
+                do_deploy = True
+        
+        if do_deploy:
+            self.say("Redeploying %s..." % branch["name"], message=message)
+            stack.deploy(branch)
+            self.say("Redeployed %s on %s." % (branch["name"], stack.name["name"]), message=message)
+
     
-    @respond_to("destroy staging stack (?P<server_name>[\w-]*)")
-    def destroy_staging(self, message, server_name=None):
-        if not server_name:
-            self.say("You didn't say which branch to stage.", message=message)
+    @respond_to("^destroy stack (?P<stack_name>.*)")
+    def destroy_staging(self, message, stack_name=None):
+        if not stack_name:
+            self.say("You didn't say which stack to destroy.", message=message)
         else:
-            context = {}
-            # servers_html = rendered_template("active_staging_stacks.html", context)
-            self.say("Sorry, I don't know how to do that yet.", message=message)
+            stack = self.get_stack_from_stack_name(stack_name)
+            if not stack:
+                self.say("Couldn't find a stack named %s." % stack_name, message=message)
+            else:
+                self.destroy_stack(stack)
+                self.say("Stack %s has been destroyed." % stack_name, message=message)
+           
     
     @periodic(hour='17', minute='0', second='0', day_of_week="mon-fri")
     def remind_staging_servers(self):
-        print "remind_staging_servers"
         context = {}
-        # servers_html = rendered_template("active_staging_server_reminder.html", context)
-        # self.say(servers_html, html=True)
+        servers_html = rendered_template("active_staging_server_reminder.html", context)
+        self.say(servers_html, html=True)
