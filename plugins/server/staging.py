@@ -38,7 +38,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
     @respond_to("make a new staging stack for (?P<branch_name>[\w-]*)")
     def start_staging(self, message, branch_name=None):
         if not branch_name:
-            self.say("You didn't say which branch to stage.")
+            self.say("You didn't say which branch to stage.", message=message)
 
         branch = self.get_branch_from_branch_name(branch_name, is_deployable=True)
         if not branch:
@@ -54,7 +54,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
     @respond_to("destroy staging stack (?P<server_name>[\w-]*)")
     def destroy_staging(self, message, server_name=None):
         if not server_name:
-            self.say("You didn't say which branch to stage.")
+            self.say("You didn't say which branch to stage.", message=message)
         else:
             context = {}
             servers_html = rendered_template("active_staging_stacks.html", context)
@@ -65,4 +65,4 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
         print "remind_staging_servers"
         context = {}
         servers_html = rendered_template("active_staging_server_reminder.html", context)
-        self.say(servers_html, html=True)
+        # self.say(servers_html, html=True)
