@@ -1,0 +1,10 @@
+{% if stacks %}
+{# Here's what's up: #}
+<ul>
+{% for s in server %}
+<li><a href="{{s.url}}">{{s.name}}</a>: {{s.branch}} 
+{% endfor %}
+</ul>
+{% else %}
+We don't have any staging stacks right now.
+{% endif %}

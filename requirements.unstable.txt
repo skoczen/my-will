@@ -1,0 +1,3 @@
+boto
+will >= 0.2.4
+github3.py

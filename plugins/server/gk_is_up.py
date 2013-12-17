@@ -6,11 +6,13 @@ from will.decorators import respond_to, periodic, hear, randomly, route, rendere
 class UptimePlugin(WillPlugin):
     
     def _verify_url(self, url):
-        r = requests.get(url)
-        if not r.status_code == 200:
-            self.say("@all WARNING: %s is down! (%s code)" % (url, r.status_code))
+        try:
+            r = requests.get(url)
+            if not r.status_code == 200:
+                self.say("@all WARNING: %s is down! (%s code)" % (url, r.status_code))
+        except:
+            pass
 
     @periodic(second='5')
     def gk_is_up(self):
-        self._verify_url("https://www.greenkahuna.com")
         self._verify_url("https://www.greenkahuna.com")

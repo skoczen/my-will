@@ -1,2 +1,4 @@
 boto
+github3.py
+pyyaml
 will >= 0.2.4
