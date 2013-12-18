@@ -1,1 +1,1 @@
-heroku
+gem 'heroku'
