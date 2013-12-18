@@ -23,10 +23,10 @@ For biz, it's things lik:
 - AWS dev bucket cleanup
 
 
-### Buildpack.
-Since we need the heroku gem, we do need a custom buildpack on heroku:
+### Buildpacks.
+Since we need the heroku gem, we do need a custom buildpack on heroku. We use [heroku-buildpack-multi](https://github.com/ddollar/heroku-buildpack-multi)
 ```
-heroku config:add BUILDPACK_URL=git://github.com/mandest/heroku-buildpack-rubypython.git
+heroku config:add BUILDPACK_URL=https://github.com/ddollar/heroku-buildpack-multi.git
 ```
 
 
