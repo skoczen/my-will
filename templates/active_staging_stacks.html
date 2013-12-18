@@ -1,7 +1,7 @@
 {% if stacks %}
 {# Here's what's up: #}
 <ul>
-{% for s in stacks %}
+{% for id, s in stacks.items() %}
 <li><a href="{{s.url}}">{{s.title}}</a>: {{s.branch.name}} 
 {% endfor %}
 </ul>
