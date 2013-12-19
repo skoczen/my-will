@@ -30,20 +30,19 @@ class GithubMixin(object):
             if not repo.fork:
                 branches = []
                 for b in repo.iter_branches():
-                    print b
                     deployable = False
                     deploy_config = None
                     if only_deployable:
                         deploy_config = repo.contents("deploy.yml", ref=b.commit.sha)
                         if deploy_config:
                             deploy_config = yaml.load(deploy_config.content.decode("base64"))
-                            print deploy_config
                             deployable = True
                     if not only_deployable or deployable:
                         branches.append(Bunch(
                             url="%s/tree/%s" % (repo.html_url, b.name),
                             repo_name=repo.name,
                             repo_obj=repo,
+                            repo_clone_url=repo.clone_url,
                             name=b.name,
                             branch_obj=b,
                             deployable=deployable,
@@ -53,7 +52,8 @@ class GithubMixin(object):
                     repos.append(Bunch(
                         name=repo.name, 
                         branches=branches, 
-                        url=repo.html_url
+                        url=repo.html_url,
+                        clone_url=repo.clone_url,
                     ))
         return repos
 
@@ -86,7 +86,6 @@ class GithubMixin(object):
             for b in r.branches:
                 if b.name == branch_name or b.name == "feature/%s" % (branch_name,):
                     matches.append(b)
-        print matches
         if len(matches) == 0:
             return None
         elif len(matches) == 1:
@@ -95,5 +94,4 @@ class GithubMixin(object):
         return matches
 
     def get_deploy_config_for_branch(self, branch_name):
-        print branch_name
         return self.get_branch_from_branch_name(branch_name, is_deployable=True).deploy_config

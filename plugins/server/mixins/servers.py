@@ -1,26 +1,27 @@
+import os
 import random
+import shutil
+import subprocess
+import time
 
 import heroku
-import requests
 
+from will.mixins import StorageMixin
 from will.utils import Bunch
 from will import settings
 
 BIGGEST_FISH_NAMES = [
-    "coelacanth",
     "lungfish",
-    "ocean sunfish",
+    "sunfish",
     "beluga",
     "sturgeon",
-    "chinese paddlefish",
+    "paddlefish",
     "kaluga",
     "bowfin",
     "conger",
     "lancetfish",
     "tigerfish",
-    "giant barb",
     "atlantic cod",
-    "alligator gar",
     "goosefish",
     "arapaima",
     "black marlin",
@@ -30,7 +31,7 @@ BIGGEST_FISH_NAMES = [
     "halibut",
     "chinook",
     "taimen",
-    "mekong giant catfish",
+    "giant catfish",
     "wels catfish",
     "tiger shark",
     "whale shark",
@@ -59,10 +60,10 @@ class Stack(Bunch):
     def ensure_created(self):
         return self.adapter.ensure_created()
 
-    def deploy(self, new_config):
+    def deploy(self, new_config, code_only=False):
         print "Deploying"
         self.branch.deploy_config = new_config
-        return self.adapter.deploy()
+        return self.adapter.deploy(code_only=code_only)
 
     def destroy(self):
         print "destroying"
@@ -91,73 +92,256 @@ class Stack(Bunch):
     def deploy_config(self):
         return self.branch.deploy_config
 
-class HerokuAdapter(Bunch):
+    @property
+    def deploy_output_key(self):
+        return "deploy_output_%s" % self.id
+
+    @property
+    def deploy_log_url(self):
+        return "%s/deploy-log/%s" % (settings.WILL_URL, self.id)
+
+class HerokuAdapter(Bunch, StorageMixin):
     def __init__(self, stack, *args, **kwargs):
         super(HerokuAdapter, self).__init__(*args, **kwargs)
         self.stack = stack
         self.heroku = heroku.from_key(settings.WILL_HEROKU_API_KEY)
+
+    def ensure_cli_auth(self):
+        cli_auth_path = os.path.abspath(os.path.expanduser("~/.will_cli_auth"))
+        if not os.path.exists(cli_auth_path):
+            netrc_path = os.path.abspath(os.path.expanduser("~/.netrc"))
+            if not os.path.exists(netrc_path):
+                with open(netrc_path, 'w+') as f:
+                    f.write("""
+    machine api.heroku.com
+      login %(email)s
+      password %(token)s
+    machine code.heroku.com
+      login %(email)s
+      password %(token)s
+    """ % {
+            "email": settings.WILL_HEROKU_EMAIL,
+            "token": settings.WILL_HEROKU_API_KEY,
+        })
+            ssh_dir = os.path.abspath(os.path.expanduser("~/.ssh"))
+            if not os.path.exists(ssh_dir):
+                os.makedirs(ssh_dir)
+
+            id_rsa_path = os.path.abspath(os.path.expanduser("~/.ssh/will_id_rsa"))
+            if not os.path.exists(id_rsa_path):
+                with open(id_rsa_path, 'w+') as f:
+                    f.write(settings.WILL_SSH.replace(";;", "\n"))
+
+            id_rsa_pub_path = os.path.abspath(os.path.expanduser("~/.ssh/will_id_rsa.pub"))
+            if not os.path.exists(id_rsa_pub_path):
+                with open(id_rsa_pub_path, 'w+') as f:
+                    f.write(settings.WILL_SSH_PUB)
+
+            self.run_command("chmod 600 will_id_rsa", cwd=ssh_dir)
+
+            with open(cli_auth_path, 'w+') as f:
+                f.write("Done")
+
+    def command_with_ssh(self, command):
+        return "ssh-agent bash -c 'ssh-add ~/.ssh/will_id_rsa; %s'" % command
+
+    def add_to_saved_output(self, additional_output, with_newline=True):
+        output = self.load(self.stack.deploy_output_key, "")
+        if with_newline:
+            output = "%s\n%s" % (output, additional_output)
+        else:
+            output = "%s%s" % (output, additional_output)
+        self.save(self.stack.deploy_output_key, output)
+
+    def run_subprocess_with_saved_output(self, command,):
+        output = self.load(self.stack.deploy_output_key, "")
+        p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        while p.poll() is None:
+            changed = False
+            for line in p.stdout:
+                line = line.replace("\r", "")
+                output = "%s\n%s" % (output, line)
+                changed = True
+                p.stdout.flush()
+
+            for line in p.stderr:
+                line = line.replace("\r", "")
+                output = "%s\n%s" % (output, line)
+                changed = True
+                p.stderr.flush()
+
+            if changed:
+                self.save(self.stack.deploy_output_key, output)
+            time.sleep(1)
+        try:
+            changed = False
+            out, err = p.communicate()
+            if out:
+                out = out.replace("\r", "")
+                output = "%s\n%s" % (output, out)
+                changed = True
+            if err:
+                err = err.replace("\r", "")
+                output = "%s\n%s" % (output, err)
+                changed = True
+        except ValueError:
+            pass
+
+        if changed:
+            self.save(self.stack.deploy_output_key, output)
+
+        if p.returncode != 0:
+            output = '%s\n\n======================\nError running %s' % (output, command)
+            self.save(self.stack.deploy_output_key, output)
+            raise Exception("Error running %s" % command)
+
+    def run_heroku_cli_command(self, command, stream_output=True):
+        self.ensure_cli_auth()
+        command = self.command_with_ssh("heroku %s" % command)
+        print "running %s" % command
+        if not stream_output:
+            return subprocess.check_output(command, shell=True)
+        else:
+            return self.run_subprocess_with_saved_output(command)
+
+    def run_command(self, command, cwd=None, stream_output=True):
+        self.ensure_cli_auth()
+        if cwd:
+            command = "cd %s;%s" % (cwd, command)
+        command = self.command_with_ssh(command)
+        print "running %s" % command
+        if not stream_output:
+            return subprocess.check_output(command, shell=True)
+        else:
+            return self.run_subprocess_with_saved_output(command)
+
+    def get_code_dir(self):
+        """Get a unique dir for this stack for holding the code (should speed up redeploys)"""
+
+        base_code_dir = os.path.abspath(os.path.expanduser("~/.will_codebases"))
+
+        if not os.path.exists(base_code_dir):
+            os.makedirs(base_code_dir)
+
+        stack_code_dir = os.path.join(base_code_dir, self.stack.id)
+        if not os.path.exists(stack_code_dir):
+            os.makedirs(stack_code_dir)
+        return stack_code_dir
 
     def deploy(self, code_only=False):
         self.ensure_created()
         print "deploy, code_only=%s" % code_only
 
         if not code_only:
-        # DB
+            # Clone the DB
+            self.add_to_saved_output("Cloning the database:")
             if "cloned_database" in self.stack.deploy_config["heroku"]:
-                # Undocumented API via heroku gem code:
-                # https://github.com/heroku/heroku/blob/master/lib/heroku/client/pgbackups.rb
-                # import requests
-                # from will import settings
-                # data = {
-                #     "user": settings.WILL_HEROKU_API_KEY,
-                #     "password": ""
-                # }
-                # r = requests.get("https://api.heroku.com/client/latest/backup", data=data)
-                # print r.status_code
-                # print r.json()
-                # Get latest
-                # /client/latest_backup"
-                
-                # "heroku pgbackups:capture --app %s" % self.stack.deploy_config["heroku"]["cloned_database"]
-                # "url = `heroku pgbackups:url` --app %s" % self.stack.deploy_config["heroku"]["cloned_database"]
-                # "heroku pgbackups:restore --app %s" % self.stack.url_name
-                pass
+                self.run_heroku_cli_command("pgbackups:capture --app %s --expire" % self.stack.deploy_config["heroku"]["cloned_database"])
+                self.add_to_saved_output(" - New backup made.")
+                url = self.run_heroku_cli_command("pgbackups:url --app %s" % self.stack.deploy_config["heroku"]["cloned_database"], stream_output=False).replace("\n","")
+                self.add_to_saved_output(" - URL verified.")
+                cached_config = dict(self.app.config.data)
+                stack_db_config_name = "DATABASE"
+                for k,v in cached_config.items():
+                    if "HEROKU_POSTGRESQL_" in k:
+                        stack_db_config_name = k
+                        break
+                self.run_heroku_cli_command("pgbackups:restore %s --app %s --confirm %s %s " % (stack_db_config_name, self.stack.url_name, self.stack.url_name, url, ))
+                self.add_to_saved_output(" - Database restored.")
 
         # Push code
+        code_dir = self.get_code_dir()
+        repo_dir = os.path.join(self.get_code_dir(), "repo")
+        
+        # Make sure we have the code
+        if not os.path.exists(os.path.join(code_dir, ".git", "config")):
+            self.add_to_saved_output("Cloning codebase:")
+            self.run_command("git clone %s repo" % self.stack.branch.repo_clone_url, cwd=code_dir)
+            self.run_command("git remote add heroku git@heroku.com:%s.git" % self.stack.url_name, cwd=repo_dir)
 
+        self.add_to_saved_output("Updating code:")
+        self.run_command("git fetch origin %s" % self.stack.branch.name, cwd=repo_dir)
+        self.run_command("git checkout %s" % self.stack.branch.name, cwd=repo_dir)
+        self.run_command("git pull", cwd=repo_dir)
+
+        # Push to heroku
+        self.add_to_saved_output("Pushing to heroku:")
+        self.run_command("git push heroku %s:master --force" % self.stack.branch.name, cwd=repo_dir, stream_output=False)
+
+        # Post-deploy hooks
+        if "post_deploy" in self.stack.deploy_config["heroku"]:
+            self.add_to_saved_output("Running post-deploy commands:")
+            post_deploy_command_types = self.stack.deploy_config["heroku"]["post_deploy"]
+            if "heroku" in post_deploy_command_types:
+                for cmd in post_deploy_command_types["heroku"]:
+                    self.add_to_saved_output(cmd)
+                    self.run_heroku_cli_command(cmd, cwd=repo_dir)
+            if "shell" in post_deploy_command_types:
+                for cmd in post_deploy_command_types["shell"]:
+                    self.add_to_saved_output(cmd)
+                    self.run_command(cmd, cwd=repo_dir)
+
+        
         # Scale
+        if "scale" in self.stack.deploy_config["heroku"]:
+            self.add_to_saved_output("Scaling:")
+            for service, num_workers in self.stack.deploy_config["heroku"]["scale"]:
+                self.run_heroku_cli_command("scale %s=%s" % (service, num_workers))
+                self.add_to_saved_output("- %s=%s" % (service, num_workers))
+        
+        self.add_to_saved_output("Deploy complete")
 
     def ensure_created(self):
+        self.save(self.stack.deploy_output_key, "")
         creating = False
         try:
             # Get or create the app
             try:
                 self.app = self.heroku.apps[self.stack.url_name]
+                self.add_to_saved_output("App exists: %s" % self.stack.url_name)
             except:
                 creating = True
                 self.app = self.heroku.apps.add(self.stack.url_name)
+                self.add_to_saved_output("Created new app: %s" % self.stack.url_name)
 
-            print "self.app.addons: %s" % self.app.addons
-            print "self.app.config: %s" % self.app.config
             self.addons = [k.name for k in self.app.addons]
-            print "self.addons: %s" % self.addons
-            
             cached_config = dict(self.app.config.data)
-            print "cached_config: %s" % cached_config
+            # Labs
+
+            if "labs" in self.stack.deploy_config["heroku"]:
+                self.add_to_saved_output("Configuring Labs")
+                lab_config = self.run_heroku_cli_command("labs", stream_output=False)
+                for lab_feature in self.stack.deploy_config["heroku"]["labs"]:
+                    self.add_to_saved_output(" - %s" % lab_feature)
+                    enabled_str = "[+] %s" % lab_feature
+                    if not enabled_str in lab_config:
+                        self.run_heroku_cli_command("labs:enable %s" % lab_feature)
+                for lab_feature in lab_config.split("\n"):
+                    if lab_feature[:3] == "[+]":
+                        feature_name = lab_feature[4:lab_feature.find(" ",5)]
+                        print "enabled: %s" % feature_name
+                        if feature_name not in self.stack.deploy_config["heroku"]["labs"]:
+                            self.add_to_saved_output(" - %s (removed)" % feature_name)
+                            self.run_heroku_cli_command("labs:disable%s" % lab_feature)
 
             # Addons
             if "addons" in self.stack.deploy_config["heroku"]:
+                self.add_to_saved_output("Configuring addons:")
                 for addon in self.stack.deploy_config["heroku"]["addons"]:
+                    self.add_to_saved_output(" - %s" % addon)
                     if addon not in self.addons:
                         print addon
                         self.app.addons.add(addon)
                 for addon_name in self.addons:
                     if addon_name not in self.stack.deploy_config["heroku"]["addons"]:
                         del self.app.addons[addon_name]
+                        self.add_to_saved_output(" - %s (removed)" % addon)
 
             # Static Config
             if "config" in self.stack.deploy_config["heroku"]:
+                self.add_to_saved_output("Configuring environment:")
                 for k, v in self.stack.deploy_config["heroku"]["config"].items():
+                    self.add_to_saved_output(" - %s" % k)
                     if k not in cached_config or cached_config[k] != v:
                         v = v.replace("$APP_NAME", self.stack.url_name)
                         self.app.config[k] = v
@@ -168,6 +352,7 @@ class HerokuAdapter(Bunch):
                     other_app = self.heroku.apps[app]
                     other_cached_config = dict(other_app.config.data)
                     for k in self.stack.deploy_config["heroku"]["cloned_config"][app]:
+                        self.add_to_saved_output(" - %s" % k)
                         if (k not in cached_config or 
                             (k in other_cached_config and cached_config[k] != other_cached_config[k])):
                             print "%s=%s" % (k, other_cached_config[k])
@@ -180,8 +365,12 @@ class HerokuAdapter(Bunch):
             raise e
 
     def destroy(self):
+        self.save(self.stack.deploy_output_key, "")
         try:
             app = self.heroku.apps[self.stack.url_name]
+            code_dir = self.get_code_dir()
+            if os.path.exists(code_dir):
+                shutil.rmtree(code_dir)
             app.destroy()
         except KeyError:
             # It's already been deleted.
@@ -210,10 +399,6 @@ class ServersMixin(object):
         new_stack = Stack(branch=branch, name=new_name)
         stacks[new_stack.id] = new_stack
         self.save_stacks(stacks)
-        # This comes after, so that even if it blows up, will knows
-        # about the stack (it might be partially there, and still
-        # charging us.)
-        new_stack.ensure_created()
         return new_stack
    
     def deploy(self, stack, code_only=False):
@@ -250,9 +435,15 @@ class ServersMixin(object):
 
         # Looser match
         for stack_id, s in self.stacks.items():
-            if s.id == stack_name or s.url_name == stack_name or s.id == stack_name:
+            if s.id == stack_name or s.url_name == stack_name or s.name == stack_name:
                 return s
         
+        # Really loose match
+        stack_name = stack_name.lower()
+        for stack_id, s in self.stacks.items():
+            if s.id.lower() == stack_name or s.url_name.lower() == stack_name or s.id.lower() == stack_name or s.name.lower() == stack_name:
+                return s
+
         return None
 
     def get_stack_from_branch_name(self, branch_name):

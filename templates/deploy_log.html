@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style type="text/css">
+    body {
+        padding: 10px;
+    }
+    #codescroll {
+        display: block;
+        height: 80%;
+        width: 90%;
+        margin: 10px;
+        background: #EEE;
+        overflow: auto;
+    }
+    #output {
+        display: block;
+        width: 98%;
+        white-space: pre-wrap;
+        padding: 10px 1%;
+    }
+</style>
+{% endblock %}
+{% block js %}
+<script>
+var container = document.getElementById('codescroll');
+var code = document.getElementById('output');
+container.scrollTop = code.offsetHeight;
+
+</script>
+{% endblock %}
+{% block head %}
+{% if deploy_output is defined %}
+<meta http-equiv="refresh" content="2">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<h1>Deploy log for {{stack_name}}</h1>
+
+<div id="codescroll">
+<code id="output">{% if deploy_output %}{{deploy_output}}
+{% else %}No output yet{% endif %}
+</code>
+</div>
+{% endblock %}
