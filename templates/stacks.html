@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block css %}
+<style type="text/css">
+    body {
+        padding: 10px;
+        background-color: #EEE;
+        color: #454545;
+        font-family: Arial, Sans-serif;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Our stacks:</h1>
+
+{% if stacks %}
+{% for s in stacks %}
+<div>{{s.name}} - <a href="{{s.deploy_log_url}}">Deploy Log</a></div>
+{% endfor %}
+{% else %}
+No stacks right now!
+{% endif %}
+{% endblock %}

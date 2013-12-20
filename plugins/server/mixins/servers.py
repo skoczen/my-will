@@ -1,3 +1,4 @@
+import fcntl
 import os
 import random
 import shutil
@@ -48,6 +49,15 @@ BIGGEST_FISH_NAMES = [
 ]
 STACKS_KEY = "will.servers.stacks"
 
+def non_blocking_read(output):
+    fd = output.fileno()
+    fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+    try:
+        return output.read()
+    except:
+        return None
+
 
 class Stack(Bunch):
 
@@ -82,7 +92,7 @@ class Stack(Bunch):
 
     @property
     def url_name(self):
-       return "gk-%s" % self.name.lower().replace(" ", "-")
+       return "%s%s" % (settings.WILL_DEPLOY_PREFIX, self.name.lower().replace(" ", "-"))
 
     @property
     def url(self):
@@ -143,36 +153,29 @@ class HerokuAdapter(Bunch, StorageMixin):
                 f.write("Done")
 
     def command_with_ssh(self, command):
-        return "ssh-agent bash -c 'ssh-add ~/.ssh/will_id_rsa; %s'" % command
+        return 'ssh-agent bash -c "ssh-add ~/.ssh/will_id_rsa; %s 2>&1"' % command.replace('"', r'\"')
 
     def add_to_saved_output(self, additional_output, with_newline=True):
         output = self.load(self.stack.deploy_output_key, "")
         if with_newline:
-            output = "%s\n%s" % (output, additional_output)
+            output = "%s%s\n" % (output, additional_output)
         else:
             output = "%s%s" % (output, additional_output)
         self.save(self.stack.deploy_output_key, output)
 
     def run_subprocess_with_saved_output(self, command,):
         output = self.load(self.stack.deploy_output_key, "")
-        p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = "%s\n" % output
+        p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
+        
         while p.poll() is None:
-            changed = False
-            for line in p.stdout:
-                line = line.replace("\r", "")
-                output = "%s\n%s" % (output, line)
-                changed = True
-                p.stdout.flush()
-
-            for line in p.stderr:
-                line = line.replace("\r", "")
-                output = "%s\n%s" % (output, line)
-                changed = True
-                p.stderr.flush()
-
-            if changed:
-                self.save(self.stack.deploy_output_key, output)
+            line = non_blocking_read(p.stdout)
+            if line:
+                if line[:len("Identity added: ")] != "Identity added: ":
+                    output = "%s%s" % (output, line)
+                    self.save(self.stack.deploy_output_key, output)
             time.sleep(1)
+
         try:
             changed = False
             out, err = p.communicate()
@@ -195,9 +198,17 @@ class HerokuAdapter(Bunch, StorageMixin):
             self.save(self.stack.deploy_output_key, output)
             raise Exception("Error running %s" % command)
 
-    def run_heroku_cli_command(self, command, stream_output=True):
+    def run_heroku_cli_command(self, command, app=None, stream_output=True, cwd=None):
         self.ensure_cli_auth()
+        if not "--app" in command and not "-a " in command:
+            if app:
+                command = "%s --app %s" % (command, app)
+            else:
+                command = "%s --app %s" % (command, self.stack.url_name)
         command = self.command_with_ssh("heroku %s" % command)
+
+        if cwd:
+            command = "cd %s;%s" % (cwd, command)
         print "running %s" % command
         if not stream_output:
             return subprocess.check_output(command, shell=True)
@@ -234,8 +245,8 @@ class HerokuAdapter(Bunch, StorageMixin):
 
         if not code_only:
             # Clone the DB
-            self.add_to_saved_output("Cloning the database:")
             if "cloned_database" in self.stack.deploy_config["heroku"]:
+                self.add_to_saved_output("Cloning the database:")
                 self.run_heroku_cli_command("pgbackups:capture --app %s --expire" % self.stack.deploy_config["heroku"]["cloned_database"])
                 self.add_to_saved_output(" - New backup made.")
                 url = self.run_heroku_cli_command("pgbackups:url --app %s" % self.stack.deploy_config["heroku"]["cloned_database"], stream_output=False).replace("\n","")
@@ -254,19 +265,25 @@ class HerokuAdapter(Bunch, StorageMixin):
         repo_dir = os.path.join(self.get_code_dir(), "repo")
         
         # Make sure we have the code
-        if not os.path.exists(os.path.join(code_dir, ".git", "config")):
+        if not os.path.exists(os.path.join(repo_dir, ".git", "config")):
             self.add_to_saved_output("Cloning codebase:")
             self.run_command("git clone %s repo" % self.stack.branch.repo_clone_url, cwd=code_dir)
             self.run_command("git remote add heroku git@heroku.com:%s.git" % self.stack.url_name, cwd=repo_dir)
 
         self.add_to_saved_output("Updating code:")
-        self.run_command("git fetch origin %s" % self.stack.branch.name, cwd=repo_dir)
-        self.run_command("git checkout %s" % self.stack.branch.name, cwd=repo_dir)
-        self.run_command("git pull", cwd=repo_dir)
+        self.add_to_saved_output(" - fetching origin... ", with_newline=False)
+        self.run_command("git fetch origin %s" % self.stack.branch.name, cwd=repo_dir, stream_output=False)
+        self.add_to_saved_output("done.")
+        self.add_to_saved_output(" - checking out %s... " % self.stack.branch.name, with_newline=False)
+        self.run_command("git checkout %s" % self.stack.branch.name, cwd=repo_dir, stream_output=False)
+        self.add_to_saved_output("done.")
+        self.add_to_saved_output(" - pulling latest changes... ", with_newline=False)
+        self.run_command("git pull", cwd=repo_dir, stream_output=False)
+        self.add_to_saved_output("done.")
 
         # Push to heroku
         self.add_to_saved_output("Pushing to heroku:")
-        self.run_command("git push heroku %s:master --force" % self.stack.branch.name, cwd=repo_dir, stream_output=False)
+        self.run_command("git push heroku %s:master --force" % self.stack.branch.name, cwd=repo_dir)
 
         # Post-deploy hooks
         if "post_deploy" in self.stack.deploy_config["heroku"]:
@@ -274,22 +291,23 @@ class HerokuAdapter(Bunch, StorageMixin):
             post_deploy_command_types = self.stack.deploy_config["heroku"]["post_deploy"]
             if "heroku" in post_deploy_command_types:
                 for cmd in post_deploy_command_types["heroku"]:
-                    self.add_to_saved_output(cmd)
+                    self.add_to_saved_output(" - heroku %s" % cmd)
                     self.run_heroku_cli_command(cmd, cwd=repo_dir)
             if "shell" in post_deploy_command_types:
                 for cmd in post_deploy_command_types["shell"]:
-                    self.add_to_saved_output(cmd)
+                    self.add_to_saved_output(" - %s" % cmd)
                     self.run_command(cmd, cwd=repo_dir)
 
         
         # Scale
         if "scale" in self.stack.deploy_config["heroku"]:
             self.add_to_saved_output("Scaling:")
-            for service, num_workers in self.stack.deploy_config["heroku"]["scale"]:
+            for service, num_workers in self.stack.deploy_config["heroku"]["scale"].items():
                 self.run_heroku_cli_command("scale %s=%s" % (service, num_workers))
                 self.add_to_saved_output("- %s=%s" % (service, num_workers))
         
         self.add_to_saved_output("Deploy complete")
+        self.add_to_saved_output('<a href="%s">%s</a>' % (self.stack.url, self.stack.url))
 
     def ensure_created(self):
         self.save(self.stack.deploy_output_key, "")
@@ -301,8 +319,15 @@ class HerokuAdapter(Bunch, StorageMixin):
                 self.add_to_saved_output("App exists: %s" % self.stack.url_name)
             except:
                 creating = True
-                self.app = self.heroku.apps.add(self.stack.url_name)
-                self.add_to_saved_output("Created new app: %s" % self.stack.url_name)
+                forked = False
+                if "fork" in self.stack.deploy_config["heroku"]:
+                    self.run_heroku_cli_command("fork -a %s %s" % (self.stack.deploy_config["heroku"]["fork"], self.stack.url_name))
+                    self.add_to_saved_output("Forked to new app: %s" % self.stack.url_name)
+                    self.app = self.heroku.apps[self.stack.url_name]
+                    forked = True
+                else:
+                    self.app = self.heroku.apps.add(self.stack.url_name)
+                    self.add_to_saved_output("Created new app: %s" % self.stack.url_name)
 
             self.addons = [k.name for k in self.app.addons]
             cached_config = dict(self.app.config.data)
@@ -315,14 +340,14 @@ class HerokuAdapter(Bunch, StorageMixin):
                     self.add_to_saved_output(" - %s" % lab_feature)
                     enabled_str = "[+] %s" % lab_feature
                     if not enabled_str in lab_config:
-                        self.run_heroku_cli_command("labs:enable %s" % lab_feature)
+                        self.run_heroku_cli_command("labs:enable %s" % (lab_feature,))
                 for lab_feature in lab_config.split("\n"):
                     if lab_feature[:3] == "[+]":
                         feature_name = lab_feature[4:lab_feature.find(" ",5)]
                         print "enabled: %s" % feature_name
                         if feature_name not in self.stack.deploy_config["heroku"]["labs"]:
                             self.add_to_saved_output(" - %s (removed)" % feature_name)
-                            self.run_heroku_cli_command("labs:disable%s" % lab_feature)
+                            self.run_heroku_cli_command("labs:disable %s --confirm %s" % (lab_feature, self.stack.url_name))
 
             # Addons
             if "addons" in self.stack.deploy_config["heroku"]:
@@ -334,7 +359,7 @@ class HerokuAdapter(Bunch, StorageMixin):
                         self.app.addons.add(addon)
                 for addon_name in self.addons:
                     if addon_name not in self.stack.deploy_config["heroku"]["addons"]:
-                        del self.app.addons[addon_name]
+                        self.run_heroku_cli_command("addons:remove %s --confirm %s" % (addon_name, self.stack.url_name))
                         self.add_to_saved_output(" - %s (removed)" % addon)
 
             # Static Config
@@ -358,11 +383,11 @@ class HerokuAdapter(Bunch, StorageMixin):
                             print "%s=%s" % (k, other_cached_config[k])
                             self.app.config[k] = other_cached_config[k]
 
-        except Exception, e:
+        except:
             import traceback; traceback.print_exc();
             if creating:
                 self.destroy()
-            raise e
+            raise
 
     def destroy(self):
         self.save(self.stack.deploy_output_key, "")
@@ -401,7 +426,10 @@ class ServersMixin(object):
         self.save_stacks(stacks)
         return new_stack
    
-    def deploy(self, stack, code_only=False):
+    def deploy(self, stack, branch=None, code_only=False):
+        if branch:
+            stack.branch = branch
+
         config = self.get_deploy_config_for_branch(stack.branch.name)
         stack.deploy(config, code_only=code_only)
 
@@ -453,4 +481,4 @@ class ServersMixin(object):
         return None
 
     def prefixed_name(self, name):
-        return "gk-%s" % name
+        return "%s%s" % (settings.WILL_DEPLOY_PREFIX, name)

@@ -1,4 +1,5 @@
 heroku:
+    fork: gk-will
     addons:
         - rediscloud
     config:

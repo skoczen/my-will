@@ -33,7 +33,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
         branches_html = rendered_template("active_staging_stacks.html", context)
         self.say(branches_html, message=message, html=True)
     
-    @respond_to("(?:new |create a?)(?:staging )?stack for (?P<branch_name>.*)")
+    @respond_to("^(?:new |create a?)(?:staging )?stack for (?P<branch_name>.*)")
     def create_stack(self, message, branch_name=None):
         if not branch_name:
             self.say("You didn't say which branch to stage.", message=message)
@@ -48,12 +48,12 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
         else:
             stack = self.new_stack(branch)
             self.say("Stack %s created and initialized." % (stack.name, ), message=message)
-            self.say("Deploying. Log at %s" % (stack.deploy_log_url, ), message=message)
+            self.say("Deploying... <a href='%s'>View log</a>" % (stack.deploy_log_url, ), message=message, html=True)
             self.deploy(stack)
             self.say("@%s %s deployed on stack %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url, ), message=message)
             
 
-    @respond_to("redeploy (?P<code_only>code to )?(?P<branch_or_stack_name>.*)")
+    @respond_to("^redeploy (?P<code_only>code to )?(?P<branch_or_stack_name>.*)")
     def redeploy(self, message, code_only=False, branch_or_stack_name=None):
         if code_only is not False:
             code_only = True
@@ -89,9 +89,9 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
                 do_deploy = True
         
         if do_deploy:
-            self.say("Deploying. Log at %s" % (stack.deploy_log_url, ), message=message)
+            self.say("Branch and stack found. Deploying... <a href='%s'>View log</a>" % (stack.deploy_log_url, ), message=message, html=True)
             self.deploy(stack, code_only=code_only)
-            self.say("@%s Redeployed %s on %s." % (message.sender.nick, branch.name, stack.name), message=message)
+            self.say("@%s Redeployed %s on %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url), message=message)
 
     
     @respond_to("^destroy stack (?P<stack_name>.*)")
@@ -105,12 +105,14 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
             else:
                 self.say("Destroying %s..." % stack_name, message=message)
                 self.destroy_stack(stack)
-                self.say("@%s, Stack %s has been destroyed." % (message.sender.nick, stack_name), message=message)
+                self.say("@%s Stack %s has been destroyed." % (message.sender.nick, stack_name), message=message)
            
     
     @periodic(hour='17', minute='0', second='0', day_of_week="mon-fri")
     def remind_staging_servers(self):
-        context = {}
+        context = {
+            "stacks": self.stacks
+        }
         servers_html = rendered_template("active_staging_server_reminder.html", context)
         self.say(servers_html, html=True)
 
@@ -122,6 +124,21 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
         if stack:
             deploy_output = self.load(stack.deploy_output_key)
         return {
+            "stack": stack,
             "stack_name": stack_name,
-            'deploy_output':deploy_output
+            "deploy_output":deploy_output,
+            "output_update_url": "/deploy-log/output/%s" % stack_name,
         }
+
+    @route("/deploy-log/output/<stack_name>")
+    def deploy_output(self, stack_name):
+        stack = self.get_stack_from_stack_name(stack_name)
+        deploy_output = self.load(stack.deploy_output_key)
+        return deploy_output
+
+
+    @route("/deploy-log/")
+    @rendered_template("stacks.html")
+    def stack_list_page(self):
+        stacks = self.stacks.values()
+        return {"stacks": stacks}
