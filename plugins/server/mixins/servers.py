@@ -208,7 +208,7 @@ class HerokuAdapter(Bunch, StorageMixin):
         command = self.command_with_ssh("heroku %s" % command)
 
         if cwd:
-            command = "cd %s;%s" % (cwd, command)
+            command = "cd %s; %s" % (cwd, command)
         print "running %s" % command
         if not stream_output:
             return subprocess.check_output(command, shell=True)
@@ -219,7 +219,7 @@ class HerokuAdapter(Bunch, StorageMixin):
         if auth_first:
             self.ensure_cli_auth()
         if cwd:
-            command = "cd %s;%s" % (cwd, command)
+            command = "cd %s; %s" % (cwd, command)
         command = self.command_with_ssh(command)
         print "running %s" % command
         if not stream_output:

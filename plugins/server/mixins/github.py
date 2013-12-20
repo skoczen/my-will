@@ -42,7 +42,7 @@ class GithubMixin(object):
                             url="%s/tree/%s" % (repo.html_url, b.name),
                             repo_name=repo.name,
                             repo_obj=repo,
-                            repo_clone_url=repo.clone_url,
+                            repo_clone_url=repo.ssh_url,
                             name=b.name,
                             branch_obj=b,
                             deployable=deployable,
