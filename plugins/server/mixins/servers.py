@@ -268,7 +268,7 @@ class HerokuAdapter(Bunch, StorageMixin):
         # Make sure we have the code
         if not os.path.exists(os.path.join(repo_dir, ".git", "config")):
             self.add_to_saved_output("Cloning codebase:")
-            self.run_command("git clone %s repo" % self.stack.branch.repo_clone_url, cwd=code_dir)
+            self.run_command("git clone -vv %s repo" % self.stack.branch.repo_clone_url, cwd=code_dir)
             self.run_command("git remote add heroku git@heroku.com:%s.git" % self.stack.url_name, cwd=repo_dir)
 
         self.add_to_saved_output("Updating code:")
