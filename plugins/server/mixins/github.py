@@ -84,7 +84,13 @@ class GithubMixin(object):
 
         for r in all_repos:
             for b in r.branches:
-                if b.name == branch_name or b.name == "feature/%s" % (branch_name,):
+                if (b.name == branch_name or 
+                    b.name == "feature/%s" % (branch_name,) or
+                    "%s/%s" % (b.repo_name, b.name) == branch_name or
+                    "%s/feature/%s" % (b.repo_name, b.name) == branch_name or
+                    "%s:%s" % (b.repo_name, b.name) == branch_name or
+                    "%s:feature/%s" % (b.repo_name, b.name) == branch_name
+                   ):
                     matches.append(b)
         if len(matches) == 0:
             return None
@@ -92,6 +98,3 @@ class GithubMixin(object):
             return matches[0]
 
         return matches
-
-    def get_deploy_config_for_branch(self, branch_name):
-        return self.get_branch_from_branch_name(branch_name, is_deployable=True).deploy_config

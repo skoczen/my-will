@@ -43,14 +43,17 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
         if not branch:
             self.say("Can't find a branch named %s" % branch_name, message=message, color="red")
         elif type(branch) is type([]):
-            branches_text = "\n-%s".join(branch)
-            self.say("Found multiple matches. %s" % branches_text, message=message, color="red")
+            branches_text = "\n- ".join(["%s/%s" % (b.repo_name, b.name) for b in branch])
+            self.say("Found multiple matches.\n - %s" % branches_text, message=message, color="red")
         else:
             stack = self.new_stack(branch)
             self.say("Stack %s created and initialized." % (stack.name, ), message=message)
             self.say("Deploying... <a href='%s'>View log</a>" % (stack.deploy_log_url, ), message=message, html=True)
-            self.deploy(stack)
-            self.say("@%s %s deployed on stack %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url, ), message=message)
+            if self.load(stack.active_deploy_key, False):
+                self.say("%s is already deploying!" % (stack.name,), message=message)
+            else:
+                self.deploy(stack)
+                self.say("@%s %s deployed on stack %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url, ), message=message)
             
 
     @respond_to("^redeploy (?P<code_only>code to )?(?P<branch_or_stack_name>.*)")
@@ -89,9 +92,12 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
                 do_deploy = True
         
         if do_deploy:
-            self.say("Branch and stack found. Deploying... <a href='%s'>View log</a>" % (stack.deploy_log_url, ), message=message, html=True)
-            self.deploy(stack, code_only=code_only)
-            self.say("@%s Redeployed %s on %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url), message=message)
+            if self.load(stack.active_deploy_key, False):
+                self.say("%s is already deploying!" % (stack.name,), message=message)
+            else:
+                self.say("Branch and stack found. Deploying... <a href='%s'>View log</a>" % (stack.deploy_log_url, ), message=message, html=True)
+                self.deploy(stack, code_only=code_only)
+                self.say("@%s Redeployed %s on %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url), message=message)
 
     
     @respond_to("^destroy stack (?P<stack_name>.*)")
@@ -106,7 +112,6 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
                 self.say("Destroying %s..." % stack_name, message=message)
                 self.destroy_stack(stack)
                 self.say("@%s Stack %s has been destroyed." % (message.sender.nick, stack_name), message=message)
-           
     
     @periodic(hour='17', minute='0', second='0', day_of_week="mon-fri")
     def remind_staging_servers(self):

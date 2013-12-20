@@ -110,6 +110,14 @@ class Stack(Bunch):
     def deploy_log_url(self):
         return "%s/deploy-log/%s" % (settings.WILL_URL, self.id)
 
+    @property
+    def active_deploy_key(self):
+        return "active_deploy_%s" % self.id
+
+    @property
+    def currently_deploying(self):
+        return self.load(self.stack.active_deploy_key, False)
+
 class HerokuAdapter(Bunch, StorageMixin):
     def __init__(self, stack, *args, **kwargs):
         super(HerokuAdapter, self).__init__(*args, **kwargs)
@@ -249,74 +257,82 @@ StrictHostKeyChecking no
         return stack_code_dir
 
     def deploy(self, code_only=False):
-        self.ensure_created()
-        print "deploy, code_only=%s" % code_only
+        if self.load(self.stack.active_deploy_key, False):
+            raise Exception("Deploy already in progress!")
+        else:
+            self.save(self.stack.active_deploy_key, True)
+            try:
+                self.ensure_created()
 
-        if not code_only:
-            # Clone the DB
-            if "cloned_database" in self.stack.deploy_config["heroku"]:
-                self.add_to_saved_output("Cloning the database:")
-                self.run_heroku_cli_command("pgbackups:capture --app %s --expire" % self.stack.deploy_config["heroku"]["cloned_database"])
-                self.add_to_saved_output(" - New backup made.")
-                url = self.run_heroku_cli_command("pgbackups:url --app %s" % self.stack.deploy_config["heroku"]["cloned_database"], stream_output=False).replace("\n","")
-                self.add_to_saved_output(" - URL verified.")
-                cached_config = dict(self.app.config.data)
-                stack_db_config_name = "DATABASE"
-                for k,v in cached_config.items():
-                    if "HEROKU_POSTGRESQL_" in k:
-                        stack_db_config_name = k
-                        break
-                self.run_heroku_cli_command("pgbackups:restore %s --app %s --confirm %s %s " % (stack_db_config_name, self.stack.url_name, self.stack.url_name, url, ))
-                self.add_to_saved_output(" - Database restored.")
+                if not code_only:
+                    # Clone the DB
+                    if "cloned_database" in self.stack.deploy_config["heroku"]:
+                        self.add_to_saved_output("Cloning the database:")
+                        self.run_heroku_cli_command("pgbackups:capture --app %s --expire" % self.stack.deploy_config["heroku"]["cloned_database"])
+                        self.add_to_saved_output(" - New backup made.")
+                        url = self.run_heroku_cli_command("pgbackups:url --app %s" % self.stack.deploy_config["heroku"]["cloned_database"], stream_output=False).replace("\n","")
+                        self.add_to_saved_output(" - URL verified.")
+                        cached_config = dict(self.app.config.data)
+                        stack_db_config_name = "DATABASE"
+                        for k,v in cached_config.items():
+                            if "HEROKU_POSTGRESQL_" in k:
+                                stack_db_config_name = k
+                                break
+                        self.run_heroku_cli_command("pgbackups:restore %s --app %s --confirm %s %s " % (stack_db_config_name, self.stack.url_name, self.stack.url_name, url, ))
+                        self.add_to_saved_output(" - Database restored.")
 
-        # Push code
-        code_dir = self.get_code_dir()
-        repo_dir = os.path.join(self.get_code_dir(), "repo")
-        
-        # Make sure we have the code
-        if not os.path.exists(os.path.join(repo_dir, ".git", "config")):
-            self.add_to_saved_output("Cloning codebase:")
-            self.run_command("git clone %s repo" % self.stack.branch.repo_clone_url, cwd=code_dir)
-            self.run_command("git remote add heroku git@heroku.com:%s.git" % self.stack.url_name, cwd=repo_dir)
+                # Push code
+                code_dir = self.get_code_dir()
+                repo_dir = os.path.join(self.get_code_dir(), "repo")
+                
+                # Make sure we have the code
+                if not os.path.exists(os.path.join(repo_dir, ".git", "config")):
+                    self.add_to_saved_output("Cloning codebase:")
+                    self.run_command("git clone %s repo" % self.stack.branch.repo_clone_url, cwd=code_dir)
+                    self.run_command("git remote add heroku git@heroku.com:%s.git" % self.stack.url_name, cwd=repo_dir)
 
-        self.add_to_saved_output("Updating code:")
-        self.add_to_saved_output(" - fetching origin... ", with_newline=False)
-        self.run_command("git fetch origin %s" % self.stack.branch.name, cwd=repo_dir, stream_output=False)
-        self.add_to_saved_output("done.")
-        self.add_to_saved_output(" - checking out %s... " % self.stack.branch.name, with_newline=False)
-        self.run_command("git checkout %s" % self.stack.branch.name, cwd=repo_dir, stream_output=False)
-        self.add_to_saved_output("done.")
-        self.add_to_saved_output(" - pulling latest changes... ", with_newline=False)
-        self.run_command("git pull", cwd=repo_dir, stream_output=False)
-        self.add_to_saved_output("done.")
+                self.add_to_saved_output("Updating code:")
+                self.add_to_saved_output(" - fetching origin... ", with_newline=False)
+                self.run_command("git fetch origin %s" % self.stack.branch.name, cwd=repo_dir, stream_output=False)
+                self.add_to_saved_output("done.")
+                self.add_to_saved_output(" - checking out %s... " % self.stack.branch.name, with_newline=False)
+                self.run_command("git checkout %s" % self.stack.branch.name, cwd=repo_dir, stream_output=False)
+                self.add_to_saved_output("done.")
+                self.add_to_saved_output(" - pulling latest changes... ", with_newline=False)
+                self.run_command("git pull", cwd=repo_dir, stream_output=False)
+                self.add_to_saved_output("done.")
 
-        # Push to heroku
-        self.add_to_saved_output("Pushing to heroku:")
-        self.run_command("git push heroku %s:master --force" % self.stack.branch.name, cwd=repo_dir)
+                # Push to heroku
+                self.add_to_saved_output("Pushing to heroku:")
+                self.run_command("git push heroku %s:master --force" % self.stack.branch.name, cwd=repo_dir)
 
-        # Post-deploy hooks
-        if "post_deploy" in self.stack.deploy_config["heroku"]:
-            self.add_to_saved_output("Running post-deploy commands:")
-            post_deploy_command_types = self.stack.deploy_config["heroku"]["post_deploy"]
-            if "heroku" in post_deploy_command_types:
-                for cmd in post_deploy_command_types["heroku"]:
-                    self.add_to_saved_output(" - heroku %s" % cmd)
-                    self.run_heroku_cli_command(cmd, cwd=repo_dir)
-            if "shell" in post_deploy_command_types:
-                for cmd in post_deploy_command_types["shell"]:
-                    self.add_to_saved_output(" - %s" % cmd)
-                    self.run_command(cmd, cwd=repo_dir)
+                # Post-deploy hooks
+                if "post_deploy" in self.stack.deploy_config["heroku"]:
+                    self.add_to_saved_output("Running post-deploy commands:")
+                    post_deploy_command_types = self.stack.deploy_config["heroku"]["post_deploy"]
+                    if "heroku" in post_deploy_command_types:
+                        for cmd in post_deploy_command_types["heroku"]:
+                            self.add_to_saved_output(" - heroku %s" % cmd)
+                            self.run_heroku_cli_command(cmd, cwd=repo_dir)
+                    if "shell" in post_deploy_command_types:
+                        for cmd in post_deploy_command_types["shell"]:
+                            self.add_to_saved_output(" - %s" % cmd)
+                            self.run_command(cmd, cwd=repo_dir)
 
-        
-        # Scale
-        if "scale" in self.stack.deploy_config["heroku"]:
-            self.add_to_saved_output("Scaling:")
-            for service, num_workers in self.stack.deploy_config["heroku"]["scale"].items():
-                self.run_heroku_cli_command("scale %s=%s" % (service, num_workers))
-                self.add_to_saved_output("- %s=%s" % (service, num_workers))
-        
-        self.add_to_saved_output("Deploy complete")
-        self.add_to_saved_output('<a href="%s">%s</a>' % (self.stack.url, self.stack.url))
+                
+                # Scale
+                if "scale" in self.stack.deploy_config["heroku"]:
+                    self.add_to_saved_output("Scaling:")
+                    for service, num_workers in self.stack.deploy_config["heroku"]["scale"].items():
+                        self.run_heroku_cli_command("scale %s=%s" % (service, num_workers))
+                        self.add_to_saved_output("- %s=%s" % (service, num_workers))
+                
+                self.add_to_saved_output("Deploy complete")
+                self.add_to_saved_output('<a href="%s">%s</a>' % (self.stack.url, self.stack.url))
+                self.save(self.stack.active_deploy_key, False)
+            except:
+                self.save(self.stack.active_deploy_key, False)
+                raise
 
     def ensure_created(self):
         self.save(self.stack.deploy_output_key, "")
@@ -439,7 +455,7 @@ class ServersMixin(object):
         if branch:
             stack.branch = branch
 
-        config = self.get_deploy_config_for_branch(stack.branch.name)
+        config = stack.branch.deploy_config
         stack.deploy(config, code_only=code_only)
 
     def destroy_stack(self, stack):
