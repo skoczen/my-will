@@ -114,10 +114,6 @@ class Stack(Bunch):
     def active_deploy_key(self):
         return "active_deploy_%s" % self.id
 
-    @property
-    def currently_deploying(self):
-        return self.load(self.stack.active_deploy_key, False)
-
 class HerokuAdapter(Bunch, StorageMixin):
     def __init__(self, stack, *args, **kwargs):
         super(HerokuAdapter, self).__init__(*args, **kwargs)
