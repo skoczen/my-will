@@ -123,12 +123,12 @@ class HerokuAdapter(Bunch, StorageMixin):
             if not os.path.exists(netrc_path):
                 with open(netrc_path, 'w+') as f:
                     f.write("""
-    machine api.heroku.com
-      login %(email)s
-      password %(token)s
-    machine code.heroku.com
-      login %(email)s
-      password %(token)s
+machine api.heroku.com
+  login %(email)s
+  password %(token)s
+machine code.heroku.com
+  login %(email)s
+  password %(token)s
     """ % {
             "email": settings.WILL_HEROKU_EMAIL,
             "token": settings.WILL_HEROKU_API_KEY,
@@ -136,6 +136,14 @@ class HerokuAdapter(Bunch, StorageMixin):
             ssh_dir = os.path.abspath(os.path.expanduser("~/.ssh"))
             if not os.path.exists(ssh_dir):
                 os.makedirs(ssh_dir)
+
+            ssh_config_path = os.path.abspath(os.path.expanduser("~/.ssh/config"))
+            if not os.path.exists(ssh_config_path):
+                with open(ssh_config_path, 'w+') as f:
+                    f.write("""
+UserKnownHostsFile /dev/null
+StrictHostKeyChecking no
+""")
 
             id_rsa_path = os.path.abspath(os.path.expanduser("~/.ssh/will_id_rsa"))
             if not os.path.exists(id_rsa_path):
