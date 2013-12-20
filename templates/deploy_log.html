@@ -109,18 +109,6 @@ blink = setInterval(blink_blinky_block, 700)
 update_output = setInterval(get_new_output, 1000)
 $("#codescroll").scroll(code_scroll_changed)
 
-$(function(){
-    $.ajax({
-        url: "https://greenkahuna.com/api/v1/listings?format=json",
-        success: function(data) {
-            alert(data);
-        },
-        fail: function() {
-            alert('failed!');
-        },
-    });
-});
-
 </script>
 {% endblock %}
 
