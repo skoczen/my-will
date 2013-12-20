@@ -147,7 +147,7 @@ class HerokuAdapter(Bunch, StorageMixin):
                 with open(id_rsa_pub_path, 'w+') as f:
                     f.write(settings.WILL_SSH_PUB)
 
-            self.run_command("chmod 600 will_id_rsa", cwd=ssh_dir)
+            self.run_command("chmod 600 will_id_rsa", cwd=ssh_dir, auth_first=False)
 
             with open(cli_auth_path, 'w+') as f:
                 f.write("Done")
@@ -215,8 +215,9 @@ class HerokuAdapter(Bunch, StorageMixin):
         else:
             return self.run_subprocess_with_saved_output(command)
 
-    def run_command(self, command, cwd=None, stream_output=True):
-        self.ensure_cli_auth()
+    def run_command(self, command, cwd=None, stream_output=True, auth_first=True):
+        if auth_first:
+            self.ensure_cli_auth()
         if cwd:
             command = "cd %s;%s" % (cwd, command)
         command = self.command_with_ssh(command)
