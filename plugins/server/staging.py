@@ -116,7 +116,8 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
     @periodic(hour='17', minute='0', second='0', day_of_week="mon-fri")
     def remind_staging_servers(self):
         context = {
-            "stacks": self.stacks
+            "stacks": self.stacks,
+            "no_stacks": self.stacks == {}
         }
         servers_html = rendered_template("active_staging_server_reminder.html", context)
         self.say(servers_html, html=True)

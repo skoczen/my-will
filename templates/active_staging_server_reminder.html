@@ -1,6 +1,10 @@
+{% if stacks %}
 Here's what's up:
 <ul>
-{% for s in stacks %}
-<li><a href="{{s.url}}">{{s.name}}</a>: {{s.branch}} 
+{% for id, s in stacks.items() %}
+<li><a href="{{s.url}}">{{s.title}}</a>: {{s.branch.name}} 
 {% endfor %}
 </ul>
+{% else %}
+We don't have any staging stacks right now.
+{% endif %}
