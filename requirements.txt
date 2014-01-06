@@ -1,4 +1,4 @@
 boto==2.20.1
-will>=0.3.2
+will>=0.3.6
 github3.py==0.7.1
 pyyaml
