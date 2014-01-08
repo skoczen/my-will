@@ -19,4 +19,4 @@ class CodeFlowPlugin(WillPlugin):
 
     @respond_to("FR (?:for )?(?P<pr_id>\d*) g2g$")
     def fr_g2g(self, message, pr_id):
-        self.say("Thanks! (crpass) for %s" % pr_id, message=message)
+        self.say("Thanks! (frpass) for %s" % pr_id, message=message)
