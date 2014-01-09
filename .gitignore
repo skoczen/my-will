@@ -38,3 +38,5 @@ nosetests.xml
 shelf.db
 
 .dewey_autocomplete.sh
+
+.idea/*
