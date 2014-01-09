@@ -11,12 +11,12 @@ class SpinTheWheelPlugin(WillPlugin):
     def get_temp(self, message):
         city_id = 0
 
-        if "Steven Skoczen" in str(message["from"]):
+        if "Steven Skoczen" in str(message.sender.nick):
             # Barcelona -> 3128760
             # Paris -> 2988507
             city_id = 5746545
 
-        if "Levi Thomason" in str(message["from"]) or "Eric Carmichael" in str(message["from"]):
+        if "Levi Thomason" in str(message.sender.nick) or "Eric Carmichael" in str(message.sender.nick):
             city_id = 5590453
 
         r = requests.get("http://api.openweathermap.org/data/2.1/weather/city/%s?units=imperial" % city_id)
@@ -40,7 +40,7 @@ class SpinTheWheelPlugin(WillPlugin):
             "go for a walk"
         ]
 
-        if "Eric Carmichael" in str(message["from"]):
+        if "Eric Carmichael" in str(message.sender.nick):
             options += [
                 "pickup a book that you forgot the ending to",
                 "play with the dog and cats",
@@ -64,19 +64,29 @@ class SpinTheWheelPlugin(WillPlugin):
                     "find an animal"
                 ]
 
-        if "Steven Skoczen" in str(message["from"]):
+        if "Steven Skoczen" in str(message.sender.nick):
             options += [
                 "write about your day from the perspective of a 15 year old version of yourself",
                 "write a poem",
                 "pickup a book where you have forgotten exactly what happens at the end",
             ]
 
-        if "Levi Thomason" in str(message["from"]):
+        if "Levi Thomason" in str(message.sender.nick):
             options += [
                 "ask a collegue for something interesting to research",
                 "sketch an example logo for GK",
-                "learn a new photoshop/illustrator tutorial"
+                "learn a new photoshop/illustrator tutorial",
+
+                "post an item on some major site (ebay, craigslist, instagram, etc.)",
+                "create an account and profile on some site for construction companies",
+                "use an old feature on the live site",
+                "use a new feature on the live site",
             ]
+
+            if self.is_it_warm_outside(message):
+                options += [
+                    "toss the frizz"
+                ]
 
         self.reply(message, choice(options))
 
