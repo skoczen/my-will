@@ -67,8 +67,12 @@ class SpinTheWheelPlugin(WillPlugin):
         if "Steven Skoczen" in str(message.sender.nick):
             options += [
                 "write about your day from the perspective of a 15 year old version of yourself",
-                "write a poem",
                 "pickup a book where you have forgotten exactly what happens at the end",
+                "take Tomo for a walk",
+                "plan an item on the year list",
+                "read one poem",
+                "review my GK notifications",
+                "clean/dust something that doesn't normally get cleaned"
             ]
 
         if "Levi Thomason" in str(message.sender.nick):
