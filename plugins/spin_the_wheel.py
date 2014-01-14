@@ -37,7 +37,8 @@ class SpinTheWheelPlugin(WillPlugin):
 
         options = [
             "call an old friend",
-            "go for a walk"
+            "go for a walk",
+            "compliment your significant other",
         ]
 
         if "Eric Carmichael" in str(message.sender.nick):
@@ -48,7 +49,7 @@ class SpinTheWheelPlugin(WillPlugin):
                 "squat 'til you drop",
                 "workout your arms",
                 "stretch your legs",
-                "how many pull ups can you do? 3 sets to do as many as you can"
+                "how many pull ups can you do? 3 sets to do as many as you can",
             ]
 
             if self.is_it_cold_outside(message):
