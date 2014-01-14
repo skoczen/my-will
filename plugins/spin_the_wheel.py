@@ -43,6 +43,9 @@ class SpinTheWheelPlugin(WillPlugin):
 
         if "Eric Carmichael" in str(message.sender.nick):
             options += [
+                "go for a run",
+                "buy levi coffee",
+                "levi buys ME coffee!",
                 "pickup a book that you forgot the ending to",
                 "play with the dog and cats",
                 "max out squat weight",
@@ -60,7 +63,6 @@ class SpinTheWheelPlugin(WillPlugin):
                 ]
             else:
                 options += [
-                    "go for a run",
                     "find a mushroom",
                     "find an animal"
                 ]
