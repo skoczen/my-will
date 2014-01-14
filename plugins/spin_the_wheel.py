@@ -1,12 +1,15 @@
 import datetime
 import requests
-from random import choice
+import random
 
 from will.plugin import WillPlugin
 from will.decorators import respond_to, periodic, hear, randomly, route, rendered_template
 
 
 class SpinTheWheelPlugin(WillPlugin):
+
+    def __init__(self):
+        self.random = random.Random()
 
     def get_temp(self, message):
         city_id = 0
@@ -94,7 +97,7 @@ class SpinTheWheelPlugin(WillPlugin):
                     "toss the frizz"
                 ]
 
-        self.reply(message, choice(options))
+        self.reply(message, self.random.shuffle(options))
 
 
 
