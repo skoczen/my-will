@@ -36,15 +36,13 @@ class SpinTheWheelPlugin(WillPlugin):
 
     @respond_to("^spin the wheel")
     def spin_the_wheel(self, message):
-        print self.is_it_warm_outside(message)
-
         options = [
             "call an old friend",
             "go for a walk",
             "compliment your significant other",
         ]
 
-        if "Eric Carmichael" in str(message.sender.nick):
+        if "Eric Carmichael" in str(message.sender.name):
             options += [
                 "go for a run",
                 "levi buys eric (coffee)!",
@@ -69,7 +67,7 @@ class SpinTheWheelPlugin(WillPlugin):
                     "find an animal"
                 ]
 
-        if "Steven Skoczen" in str(message.sender.nick):
+        if "Steven Skoczen" in str(message.sender.name):
             options += [
                 "write about your day from the perspective of a 15 year old version of yourself",
                 "pickup a book where you have forgotten exactly what happens at the end",
@@ -80,7 +78,7 @@ class SpinTheWheelPlugin(WillPlugin):
                 "clean/dust something that doesn't normally get cleaned"
             ]
 
-        if "Levi Thomason" in str(message.sender.nick):
+        if "Levi Thomason" in str(message.sender.name):
             options += [
                 "ask a collegue for something interesting to research",
                 "sketch an example logo for GK",
@@ -97,7 +95,7 @@ class SpinTheWheelPlugin(WillPlugin):
                     "toss the frizz"
                 ]
 
-        self.reply(message, self.random.shuffle(options))
+        self.reply(message, self.random.choice(options))
 
 
 
