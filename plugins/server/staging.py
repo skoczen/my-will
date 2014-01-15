@@ -57,7 +57,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
                 self.say("@%s %s deployed on stack %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url, ), message=message)
             
 
-    @respond_to("^(?P<force>force )redeploy (?P<code_only>code to )?(?P<branch_or_stack_name>.*)")
+    @respond_to("^(?P<force>force )?redeploy (?P<code_only>code to )?(?P<branch_or_stack_name>.*)")
     def redeploy(self, message, force=False, code_only=False, branch_or_stack_name=None):
         if code_only is not False:
             code_only = True
