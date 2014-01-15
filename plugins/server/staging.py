@@ -57,12 +57,14 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
                 self.say("@%s %s deployed on stack %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url, ), message=message)
             
 
-    @respond_to("^redeploy (?P<code_only>code to )?(?P<branch_or_stack_name>.*)")
-    def redeploy(self, message, code_only=False, branch_or_stack_name=None):
+    @respond_to("^(?P<force>force )redeploy (?P<code_only>code to )?(?P<branch_or_stack_name>.*)")
+    def redeploy(self, message, force=False code_only=False, branch_or_stack_name=None):
         if code_only is not False:
             code_only = True
         if not branch_or_stack_name:
             self.say("You didn't say which branch or stack to redeploy.", message=message)
+        if force is not false:
+            force = True
 
         do_deploy = False
         stack = None
@@ -93,7 +95,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
                 do_deploy = True
         
         if do_deploy:
-            if self.load(stack.active_deploy_key, False):
+            if self.load(stack.active_deploy_key, False) and not force:
                 self.say("%s is already deploying!" % (stack.name,), message=message)
             else:
                 self.say("Branch and stack found. Deploying... <a href='%s'>View log</a>" % (stack.deploy_log_url, ), message=message, html=True)
