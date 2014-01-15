@@ -63,7 +63,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
             code_only = True
         if not branch_or_stack_name:
             self.say("You didn't say which branch or stack to redeploy.", message=message)
-        if force is not false:
+        if force is not False:
             force = True
 
         do_deploy = False
