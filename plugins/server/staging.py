@@ -53,6 +53,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
                 self.say("%s is already deploying!" % (stack.name,), message=message)
             else:
                 self.deploy(stack)
+                self.save(stack.active_deploy_key, False)
                 self.say("@%s %s deployed on stack %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url, ), message=message)
             
 
@@ -97,6 +98,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
             else:
                 self.say("Branch and stack found. Deploying... <a href='%s'>View log</a>" % (stack.deploy_log_url, ), message=message, html=True)
                 self.deploy(stack, code_only=code_only)
+                self.save(stack.active_deploy_key, False)
                 self.say("@%s Redeployed %s on %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url), message=message)
 
     
@@ -111,6 +113,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
             else:
                 self.say("Destroying %s..." % stack_name, message=message)
                 self.destroy_stack(stack)
+                self.save(stack.active_deploy_key, False)
                 self.say("@%s Stack %s has been destroyed." % (message.sender.nick, stack_name), message=message)
     
     @periodic(hour='17', minute='0', second='0', day_of_week="mon-fri")
