@@ -25,7 +25,6 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
         context = {"repos": repos}
         branches_html = rendered_template("available_branches.html", context)
         self.say(branches_html, message=message, html=True)
-
     
     @respond_to("(?:^what (?:staging )?stacks (?:do we have|are there)\?|^list stacks)")
     def list_stacks(self, message):

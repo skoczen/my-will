@@ -11,7 +11,7 @@ class TimeTopicPlugin(WillPlugin):
         now_pst = datetime.datetime.now()
         now_bcn = now_pst + datetime.timedelta(hours=9)
 
-        topic = "PST: %s, BCN: %s" % (now_pst.strftime("%a %I:%M %p"), now_bcn.strftime("%a %I:%M %p"))
+        topic = "PST: %s, Paris: %s" % (now_pst.strftime("%a %I:%M %p"), now_bcn.strftime("%a %I:%M %p"))
         self.set_topic(topic)
 
     @respond_to("^time$")
@@ -19,5 +19,5 @@ class TimeTopicPlugin(WillPlugin):
         now_pst = datetime.datetime.now()
         now_bcn = now_pst + datetime.timedelta(hours=9)
  
-        topic = "PST: %s, BCN: %s" % (now_pst.strftime("%a %I:%M %p"), now_bcn.strftime("%a %I:%M %p"))
+        topic = "PST: %s, Paris: %s" % (now_pst.strftime("%a %I:%M %p"), now_bcn.strftime("%a %I:%M %p"))
         self.reply(message, topic)
