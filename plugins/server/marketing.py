@@ -8,6 +8,6 @@ class MarketingPlugin(WillPlugin):
         if success_code == "0":
             self.say("Marketing site deployed successfully: http://gk-marketing.s3-website-us-east-1.amazonaws.com/")
         else:
-            self.say("Error deploying marketing site.")
+            self.say("Error deploying marketing site.", color="red")
         return "Success"
 
