@@ -348,17 +348,18 @@ StrictHostKeyChecking no
             self.add_to_saved_output(" - %s" % c)
             print self.app.collaborators
             if not c in self.collaborators:
-                auth_token = base64.b64encode("%s:%s" % (settings.WILL_HEROKU_EMAIL, settings.WILL_HEROKU_API_KEY))
+                auth_token = base64.b64encode(":%s" % (settings.WILL_HEROKU_API_KEY,))
                 data = {
                     "user": c,
                     "silent": True,
                 }
                 headers = {
                     'Content-type': 'application/json',
-                    'Accept': 'application/vnd.heroku+json',
-                    'version': 3,
-                    'Authorization': 'Basic %s' % auth_token,
+                    'Accept': 'application/vnd.heroku+json; version=3',
+                    'Authorization': '%s' % auth_token,
                 }
+                import base64
+
                 print data
                 print headers
                 r = requests.post(
@@ -366,9 +367,11 @@ StrictHostKeyChecking no
                     headers=headers,
                     data=data,
                 )
-                print r
+                print r.status_code
+                print r.json()
                 if not r.status_code == 200:
-                    raise Exception("Unable to add %s as a collaborator. (%s)" % (c, r.status_code))
+                    if not "is already a collaborator" in r.json()["message"]:
+                        raise Exception("Unable to add %s as a collaborator. (%s)" % (c, r.status_code))
 
     def ensure_created(self):
         self.save(self.stack.deploy_output_key, "")
