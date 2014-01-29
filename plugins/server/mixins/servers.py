@@ -1,3 +1,4 @@
+import base64
 import fcntl
 import os
 import random
@@ -347,11 +348,19 @@ StrictHostKeyChecking no
             self.add_to_saved_output(" - %s" % c)
             print self.app.collaborators
             if not c in self.collaborators:
+                auth_token = base64.b64encode("%s:%s" % (settings.WILL_HEROKU_EMAIL, setings.WILL_HEROKU_API_KEY))
                 data = {
                     "user": c,
-                    "silent": True
+                    "silent": True,
                 }
-                headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+                headers = {
+                    'Content-type': 'application/json',
+                    'Accept': 'application/vnd.heroku+json',
+                    'version': 3,
+                    'Authorization': 'Basic %s=' % auth_token,
+                }
+                print data
+                print headers
                 r = requests.post(
                     "https://api.heroku.com/apps/%s/collaborators" % self.stack.url_name,
                     headers=headers,
