@@ -51,7 +51,8 @@ BIGGEST_FISH_NAMES = [
 COLLABORATOR_EMAILS = [
     "eric@greenkahuna.com",
     "levi@greenkahuna.com",
-    "steven@greenkahuna.com"
+    "steven@greenkahuna.com",
+    "will@greenkahuna.com",
 ]
 STACKS_KEY = "will.servers.stacks"
 
@@ -283,9 +284,6 @@ StrictHostKeyChecking no
                         self.run_heroku_cli_command("pgbackups:restore %s --app %s --confirm %s %s " % (stack_db_config_name, self.stack.url_name, self.stack.url_name, url, ))
                         self.add_to_saved_output(" - Database restored.")
 
-                # Add collaborators
-                self.ensure_collaborators()
-
                 # Push code
                 code_dir = self.get_code_dir()
                 repo_dir = os.path.join(self.get_code_dir(), "repo")
@@ -359,8 +357,9 @@ StrictHostKeyChecking no
                     headers=headers,
                     data=data,
                 )
+                print r
                 if not r.status_code == 200:
-                    raise Exception("Unable to add %s as a collaborator.")
+                    raise Exception("Unable to add %s as a collaborator. (%s)" % (c, r.status_code))
 
     def ensure_created(self):
         self.save(self.stack.deploy_output_key, "")
@@ -384,8 +383,11 @@ StrictHostKeyChecking no
 
             self.addons = [k.name for k in self.app.addons]
             cached_config = dict(self.app.config.data)
-            # Labs
+            
+            # Collaborators
+            self.ensure_collaborators()
 
+            # Labs
             if "labs" in self.stack.deploy_config["heroku"]:
                 self.add_to_saved_output("Configuring Labs")
                 lab_config = self.run_heroku_cli_command("labs", stream_output=False)
