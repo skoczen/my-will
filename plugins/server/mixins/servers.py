@@ -358,7 +358,6 @@ StrictHostKeyChecking no
                     'Accept': 'application/vnd.heroku+json; version=3',
                     'Authorization': '%s' % auth_token,
                 }
-                import base64
 
                 print data
                 print headers
