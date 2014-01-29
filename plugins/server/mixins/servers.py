@@ -359,10 +359,13 @@ StrictHostKeyChecking no
                     "https://api.heroku.com/apps/%s/collaborators" % self.stack.url_name,
                     headers=headers,
                     data=data,
+
+
+
                 )
                 print r.json()
-                if not r.status_code == 200 or not r.status_code == 201:
-                    if not "is already a collaborator" in r.json()["message"]:
+                if not r.status_code == 200 and not r.status_code == 201:
+                    if "message" in r.rson() and not "is already a collaborator" in r.json()["message"]:
                         raise Exception("Unable to add %s as a collaborator. (%s)" % (c, r.status_code))
 
     def ensure_created(self):
