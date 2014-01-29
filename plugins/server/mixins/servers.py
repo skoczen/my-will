@@ -354,7 +354,6 @@ StrictHostKeyChecking no
                     "silent": True,
                 }
                 headers = {
-                    'Content-type': 'application/json',
                     'Accept': 'application/vnd.heroku+json; version=3',
                     'Authorization': '%s' % auth_token,
                 }
