@@ -357,7 +357,7 @@ StrictHostKeyChecking no
                     'Content-type': 'application/json',
                     'Accept': 'application/vnd.heroku+json',
                     'version': 3,
-                    'Authorization': 'Basic %s=' % auth_token,
+                    'Authorization': 'Basic %s' % auth_token,
                 }
                 print data
                 print headers
