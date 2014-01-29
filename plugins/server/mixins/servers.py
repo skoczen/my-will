@@ -341,12 +341,9 @@ StrictHostKeyChecking no
     def ensure_collaborators(self):
         self.add_to_saved_output("Ensuring collaborators:")
         self.collaborators = [c.email for c in self.app.collaborators]
-        print self.collaborators
-        print [c.__dict__ for c in self.app.collaborators]
 
         for c in COLLABORATOR_EMAILS:
             self.add_to_saved_output(" - %s" % c)
-            print self.app.collaborators
             if not c in self.collaborators:
                 auth_token = base64.b64encode(":%s" % (settings.WILL_HEROKU_API_KEY,))
                 data = {
@@ -358,16 +355,13 @@ StrictHostKeyChecking no
                     'Authorization': '%s' % auth_token,
                 }
 
-                print data
-                print headers
                 r = requests.post(
                     "https://api.heroku.com/apps/%s/collaborators" % self.stack.url_name,
                     headers=headers,
                     data=data,
                 )
-                print r.status_code
                 print r.json()
-                if not r.status_code == 200:
+                if not r.status_code == 200 or not r.status_code == 201:
                     if not "is already a collaborator" in r.json()["message"]:
                         raise Exception("Unable to add %s as a collaborator. (%s)" % (c, r.status_code))
 
