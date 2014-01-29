@@ -1,6 +1,7 @@
 import fcntl
 import os
 import random
+import requests
 import shutil
 import subprocess
 import time
@@ -342,12 +343,24 @@ StrictHostKeyChecking no
         self.add_to_saved_output("Ensuring collaborators:")
         self.collaborators = [c.email for c in self.app.collaborators]
         print self.collaborators
-        
+        print [c.__dict__ for c in self.app.collaborators]
+
         for c in COLLABORATOR_EMAILS:
             self.add_to_saved_output(" - %s" % c)
             print self.app.collaborators
             if not c in self.collaborators:
-                self.app.collaborators.add(c, silent=True)
+                data = {
+                    "user": c,
+                    "silent": True
+                }
+                headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+                r = requests.post(
+                    "https://api.heroku.com/apps/%s/collaborators" % self.stack.url_name,
+                    headers=headers,
+                    data=data,
+                )
+                if not r.status_code == 200:
+                    raise Exception("Unable to add %s as a collaborator.")
 
     def ensure_created(self):
         self.save(self.stack.deploy_output_key, "")
