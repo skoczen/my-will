@@ -340,10 +340,14 @@ StrictHostKeyChecking no
 
     def ensure_collaborators(self):
         self.add_to_saved_output("Ensuring collaborators:")
+        self.collaborators = [c.email for c in self.app.collaborators]
+        print self.collaborators
+        
         for c in COLLABORATOR_EMAILS:
             self.add_to_saved_output(" - %s" % c)
             print self.app.collaborators
-            self.app.collaborators.add(c)
+            if not c in self.collaborators:
+                self.app.collaborators.add(c, silent=True)
 
     def ensure_created(self):
         self.save(self.stack.deploy_output_key, "")
