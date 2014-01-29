@@ -47,6 +47,11 @@ BIGGEST_FISH_NAMES = [
     "angelshark",
     "atlantic torpedo",
 ]
+COLLABORATOR_EMAILS = [
+    "eric@greenkahuna.com",
+    "levi@greenkahuna.com",
+    "steven@greenkahuna.com"
+]
 STACKS_KEY = "will.servers.stacks"
 
 def non_blocking_read(output):
@@ -70,10 +75,10 @@ class Stack(Bunch):
     def ensure_created(self):
         return self.adapter.ensure_created()
 
-    def deploy(self, new_config, code_only=False):
+    def deploy(self, new_config, code_only=False, force=False):
         print "Deploying"
         self.branch.deploy_config = new_config
-        return self.adapter.deploy(code_only=code_only)
+        return self.adapter.deploy(code_only=code_only, force=force)
 
     def destroy(self):
         print "destroying"
@@ -252,8 +257,8 @@ StrictHostKeyChecking no
             os.makedirs(stack_code_dir)
         return stack_code_dir
 
-    def deploy(self, code_only=False):
-        if self.load(self.stack.active_deploy_key, False):
+    def deploy(self, code_only=False, force=False):
+        if self.load(self.stack.active_deploy_key, False) and not force:
             raise Exception("Deploy already in progress!")
         else:
             self.save(self.stack.active_deploy_key, True)
@@ -276,6 +281,9 @@ StrictHostKeyChecking no
                                 break
                         self.run_heroku_cli_command("pgbackups:restore %s --app %s --confirm %s %s " % (stack_db_config_name, self.stack.url_name, self.stack.url_name, url, ))
                         self.add_to_saved_output(" - Database restored.")
+
+                # Add collaborators
+                self.ensure_collaborators()
 
                 # Push code
                 code_dir = self.get_code_dir()
@@ -329,6 +337,13 @@ StrictHostKeyChecking no
             except:
                 self.save(self.stack.active_deploy_key, False)
                 raise
+
+    def ensure_collaborators(self):
+        self.add_to_saved_output("Ensuring collaborators:")
+        for c in COLLABORATOR_EMAILS:
+            self.add_to_saved_output(" - %s" % c)
+            print self.app.collaborators
+            self.app.collaborators.add(c)
 
     def ensure_created(self):
         self.save(self.stack.deploy_output_key, "")
@@ -447,12 +462,12 @@ class ServersMixin(object):
         self.save_stacks(stacks)
         return new_stack
    
-    def deploy(self, stack, branch=None, code_only=False):
+    def deploy(self, stack, branch=None, code_only=False, force=False):
         if branch:
             stack.branch = branch
 
         config = stack.branch.deploy_config
-        stack.deploy(config, code_only=code_only)
+        stack.deploy(config, code_only=code_only, force=force)
 
     def destroy_stack(self, stack):
         stack.destroy()

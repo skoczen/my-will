@@ -98,7 +98,7 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
                 self.say("%s is already deploying!" % (stack.name,), message=message)
             else:
                 self.say("Branch and stack found. Deploying... <a href='%s'>View log</a>" % (stack.deploy_log_url, ), message=message, html=True)
-                self.deploy(stack, code_only=code_only)
+                self.deploy(stack, code_only=code_only, force=force)
                 self.save(stack.active_deploy_key, False)
                 self.say("@%s Redeployed %s on %s. %s" % (message.sender.nick, branch.name, stack.name, stack.url), message=message)
 
