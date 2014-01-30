@@ -348,7 +348,7 @@ StrictHostKeyChecking no
                 auth_token = base64.b64encode(":%s" % (settings.WILL_HEROKU_API_KEY,))
                 data = {
                     "user": c,
-                    "silent": True,
+                    "silent": "true",
                 }
                 headers = {
                     'Accept': 'application/vnd.heroku+json; version=3',
