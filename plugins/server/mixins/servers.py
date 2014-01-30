@@ -363,7 +363,6 @@ StrictHostKeyChecking no
 
 
                 )
-                print r.json()
                 if not r.status_code == 200 and not r.status_code == 201:
                     if "message" in r.rson() and not "is already a collaborator" in r.json()["message"]:
                         raise Exception("Unable to add %s as a collaborator. (%s)" % (c, r.status_code))
