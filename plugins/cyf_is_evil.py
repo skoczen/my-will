@@ -5,6 +5,6 @@ from will.decorators import respond_to, periodic, hear, randomly, route, rendere
 
 class CYFIsEvilPlugin(WillPlugin):
 
-    @respond_to("\(cyf\)")
+    @hear("\(cyf\)")
     def scream_from_cyf(self, message):
         self.say("NOOOOOOOooooooOOOOOO!!!  It huurts!!")
