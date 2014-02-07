@@ -1,5 +1,6 @@
 import datetime
 import requests
+import time
 from will.plugin import WillPlugin
 from will.decorators import respond_to, periodic, hear, randomly, route, rendered_template
 
@@ -9,7 +10,10 @@ class UptimePlugin(WillPlugin):
         try:
             r = requests.get(url)
             if not r.status_code == 200:
-                self.say("@all WARNING: %s is down! (%s code)" % (url, r.status_code))
+                time.sleep(5)
+                r = requests.get(url)
+                if not r.status_code == 200:
+                    self.say("@all WARNING: %s is down! (%s code)" % (url, r.status_code), color="red")
         except:
             pass
 
