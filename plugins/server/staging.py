@@ -152,3 +152,10 @@ class StagingPlugin(WillPlugin, ServersMixin, GithubMixin):
     def stack_list_page(self):
         stacks = self.stacks.values()
         return {"stacks": stacks}
+
+    @route("/stacks/")
+    @rendered_template("stacks.html")
+    def stack_list_page(self):
+        stacks = self.stacks.values()
+        return {"stacks": stacks}
+
