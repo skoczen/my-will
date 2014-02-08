@@ -4,10 +4,10 @@ from will.decorators import respond_to, periodic, hear, randomly, route, rendere
 
 class ThanksPlugin(WillPlugin):
 
-    @respond_to("^(?:thanks|thank you|tx|thx)")
+    @respond_to("^(?:thanks|thank you|tx|thx|ty|tyvm)")
     def respond_to_thanks(self, message):
         self.reply(message, "You're welcome!")
 
-    @hear("thanks,? will")
+    @hear("(thanks|thank you|tx|thx|ty|tyvm),? will")
     def hear_thanks(self, message):
         self.say("You're welcome!", message=message)
