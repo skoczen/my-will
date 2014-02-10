@@ -14,7 +14,7 @@ class MonthlyGoalsPlugin(WillPlugin):
     def say_goals_on_monday(self):
         self.say_goals()
 
-    @respond_to("^(?:What are the )?monthly goals")
+    @respond_to("^(?:What are the )?(?:monthly )?goals")
     def respond_to_goals_question(self, message):
         self.say_goals(message=message)
 
