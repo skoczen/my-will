@@ -16,7 +16,10 @@
 
 {% if stacks %}
 {% for s in stacks %}
-<div><a href="{{s.url}}" target="_blank">{{s.name|title}}</a> - <a href="{{s.deploy_log_url}}">Deploy Log</a></div>
+<h3>{{s.name|title}}</h3>
+<div><b>Branch:</b> {{s.branch.name}}</div>
+<div><b>Url:</b><a href="{{s.url}}" target="_blank">{{s.url}}</a></div>
+<div><a href="{{s.deploy_log_url}}">Deploy Log</a></div>
 {% endfor %}
 {% else %}
 No stacks right now!
