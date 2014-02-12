@@ -5,7 +5,7 @@ from will.decorators import respond_to, periodic, hear, randomly, route, rendere
 
 class HelloPlugin(WillPlugin):
 
-    @respond_to("^hello")
+    @respond_to("^hello$")
     def hello(self, message):
         self.reply(message, "hi!")
     
