@@ -16,4 +16,4 @@ class GoldStarPlugin(WillPlugin):
 
         self.say("Awarded %s stars to %s." % (num_stars, user_name), message=message)
         if hasattr(settings,"GOLD_STAR_URL"):
-            self.say(GOLD_STAR_URL, message=message)
+            self.say(settings.GOLD_STAR_URL, message=message)
