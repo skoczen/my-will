@@ -8,6 +8,6 @@ class FunImagesPlugin(WillPlugin):
     def hear_highfive(self, message):
         self.say("https://gk-will.s3.amazonaws.com/highfive.jpg", message=message)
 
-    @hear(" bug[^A-z]")
+    @hear(" a bug[^A-z]")
     def hear_bug(self, message):
         self.say("https://gk-will.s3.amazonaws.com/bugfeature.gif", message=message)
