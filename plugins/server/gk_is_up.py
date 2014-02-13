@@ -20,3 +20,7 @@ class UptimePlugin(WillPlugin):
     @periodic(second='5')
     def gk_is_up(self):
         self._verify_url("https://www.greenkahuna.com")
+
+    @periodic(second='5')
+    def sb_is_up(self):
+        self._verify_url("https://www.scrapbin.com")
