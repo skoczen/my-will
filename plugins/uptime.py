@@ -1,4 +1,3 @@
-import datetime
 import requests
 import time
 from will.plugin import WillPlugin
@@ -18,9 +17,5 @@ class UptimePlugin(WillPlugin):
             pass
 
     @periodic(second='5')
-    def gk_is_up(self):
-        self._verify_url("https://www.greenkahuna.com")
-
-    @periodic(second='5')
-    def sb_is_up(self):
-        self._verify_url("https://www.scrapbin.com")
+    def ss_is_up(self):
+        self._verify_url("https://stevenskoczen.com")

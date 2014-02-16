@@ -4,7 +4,7 @@ from will import settings
 
 class MonthlyGoalsPlugin(WillPlugin):
 
-    @respond_to("Set monthly goals to (?P<goals>.*)", multiline=True)
+    @respond_to("Set my monthly goals to (?P<goals>.*)", multiline=True)
     def set_goals(self, message, goals=""):
         print "goals: %s" % goals
         self.save("monthly_goals", goals)
@@ -14,7 +14,7 @@ class MonthlyGoalsPlugin(WillPlugin):
     def say_goals_on_monday(self):
         self.say_goals()
 
-    @respond_to("^(?:What are the )?(?:monthly )?goals")
+    @respond_to("^(?:What are my )?(?:monthly )?goals")
     def respond_to_goals_question(self, message):
         self.say_goals(message=message)
 
@@ -24,4 +24,4 @@ class MonthlyGoalsPlugin(WillPlugin):
         if goals:
             self.say("@all our monthly goals:\n %s" % goals, message=message)
         else:
-            self.say("No montly goals set.", message=message)
+            self.say("No monthly goals set.", message=message)
