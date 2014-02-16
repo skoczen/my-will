@@ -1,9 +1,9 @@
 test:
   override:
-    - /home/ubuntu/our-will/scripts/test_run.sh
+    - /home/ubuntu/my-will/scripts/test_run.sh
     # - nose test
 deployment:
   production:
     branch: master
     heroku:
-      appname: gk-will
+      appname: steven-will
