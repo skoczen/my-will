@@ -3,8 +3,9 @@ import time
 from will.plugin import WillPlugin
 from will.decorators import respond_to, periodic, hear, randomly, route, rendered_template
 
+
 class UptimePlugin(WillPlugin):
-    
+
     def _verify_url(self, url):
         try:
             r = requests.get(url)
@@ -18,4 +19,20 @@ class UptimePlugin(WillPlugin):
 
     @periodic(second='5')
     def ss_is_up(self):
-        self._verify_url("https://stevenskoczen.com")
+        self._verify_url("http://stevenskoczen.com")
+
+    @periodic(second='5')
+    def slowart_is_up(self):
+        self._verify_url("http://slowartpdx.com")
+
+    @periodic(second='5')
+    def encore_is_up(self):
+        self._verify_url("http://encorepoem.com")
+
+    @periodic(second='5')
+    def autoscalebot_is_up(self):
+        self._verify_url("http://autoscalebot.com")
+
+    @periodic(second='5')
+    def goodcloud_is_up(self):
+        self._verify_url("http://www.agoodcloud.com")
