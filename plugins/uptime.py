@@ -31,7 +31,7 @@ class UptimePlugin(WillPlugin):
 
     @periodic(second='5')
     def autoscalebot_is_up(self):
-        self._verify_url("http://autoscalebot.com")
+        self._verify_url("https://www.autoscalebot.com")
 
     @periodic(second='5')
     def goodcloud_is_up(self):
