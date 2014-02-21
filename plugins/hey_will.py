@@ -5,6 +5,6 @@ from will.decorators import respond_to, periodic, hear, randomly, route, rendere
 class HeyWillPlugin(WillPlugin):
 
     @route("/hey-will/")
-    def hey_will_listener(self, phrase):
+    def hey_will_listener(self):
         print self.request.body
         self.say(self.request.body)
