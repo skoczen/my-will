@@ -4,8 +4,7 @@ from will.decorators import respond_to, periodic, hear, randomly, route, rendere
 
 class HeyWillPlugin(WillPlugin):
 
-    @route("/hey-will/", method='GET')
-    @route("/hey-will/", method='POST')
+    @route("/hey-will/")
     def hey_will_listener(self):
         try:
             print "hey_will_listener"
