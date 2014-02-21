@@ -8,3 +8,4 @@ class HeyWillPlugin(WillPlugin):
     def hey_will_listener(self):
         print self.request.body
         self.say(self.request.body)
+        return "You got it."
