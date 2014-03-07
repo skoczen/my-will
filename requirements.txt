@@ -23,3 +23,4 @@ sleekxmpp==1.1.11
 uritemplate.py==0.3.0
 will==0.3.9
 wsgiref==0.1.2
+-e git://github.com/smbaker/pynest.git@94f5df4a2236b1c3275a0b8a6987acff6adc55d9#egg=pynest-dev
