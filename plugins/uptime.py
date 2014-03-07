@@ -39,4 +39,4 @@ class UptimePlugin(WillPlugin):
 
     @periodic(second='5')
     def isenough_is_up(self):
-        self._verify_url("http://www.isenough.com")
+        self._verify_url("http://isenough.com")
