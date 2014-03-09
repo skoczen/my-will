@@ -10,7 +10,7 @@ def todays_one_thing():
 
 class OneThingPlugin(WillPlugin):
 
-    @respond_to("what's my one thing for today?")
+    @respond_to("what's my one thing(?: for today)?")
     def respond_to_what_is(self, message):
         self.reply(message, todays_one_thing())
 
