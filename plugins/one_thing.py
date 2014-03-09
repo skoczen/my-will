@@ -14,6 +14,8 @@ class OneThingPlugin(WillPlugin):
     def respond_to_what_is(self, message):
         self.reply(message, todays_one_thing())
 
-    @hear("^one thing")
+    @respond_to("^one thing")
     def hear_thanks(self, message):
-        self.say(todays_one_thing(), message=message)
+        one_thing = todays_one_thing()
+        one_thing = "%s%s" % (one_thing[0].upper(), one_thing[1:])
+        self.say(one_thing, message=message)
