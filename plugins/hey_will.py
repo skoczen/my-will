@@ -8,6 +8,7 @@ class HeyWillPlugin(WillPlugin):
     def hey_will_listener(self):
         try:
             if "phrase" in self.request.params:
+                
                 self.say(self.request.params["phrase"])
                 return "You got it."
             else:

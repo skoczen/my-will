@@ -10,4 +10,6 @@ class SleepPlugin(WillPlugin):
 
     @route("/sleep/woke-up")
     def awake_listener(self):
+        from one_thing import todays_one_thing
         self.say("G'morning, @steven!")
+        self.say("Today, %s" % todays_one_thing())
