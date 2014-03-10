@@ -23,7 +23,7 @@ class HeyWillPlugin(WillPlugin):
                 url = "https://api.hipchat.com/v2/room/%(room_id)s/notification?auth_token=%(token)s" % context
                 data = {"message": message}
                 headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-                r = requests.post(url, headers=headers, data=json.dumps(data))
+                requests.post(url, headers=headers, data=json.dumps(data))
                 return "You got it."
             else:
                 return "Sorry, couldn't hear you!"
