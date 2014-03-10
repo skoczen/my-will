@@ -9,7 +9,6 @@ class NestPlugin(WillPlugin):
 
     @respond_to("set the (?:house|heat|temp|temperature) to (?P<temp>.*)")
     def set_the_temp(self, message, temp):
-        print "setting %s" % temp
         temp = int(temp)
         nest = Nest(
             username=settings.NEST_USERNAME,
@@ -38,5 +37,4 @@ class NestPlugin(WillPlugin):
             "is_on": nest.status['shared'][nest.serial]['hvac_heater_state'],
         }
         status_text = rendered_template("house_status.html", context)
-        print status_text
         self.reply(message, status_text, html=True)
