@@ -12,4 +12,4 @@ class SleepPlugin(WillPlugin):
     def awake_listener(self):
         from one_thing import todays_one_thing
         self.say("G'morning, @steven!")
-        self.say("Today, %s" % todays_one_thing())
+        # self.say("Today, %s" % todays_one_thing())

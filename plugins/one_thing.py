@@ -19,3 +19,7 @@ class OneThingPlugin(WillPlugin):
         one_thing = todays_one_thing()
         one_thing = "%s%s" % (one_thing[0].upper(), one_thing[1:])
         self.say(one_thing, message=message)
+
+    @periodic(hour='11', minute='0')
+    def say_todays_thing(self):
+        self.say(todays_one_thing())
