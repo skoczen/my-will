@@ -22,4 +22,4 @@ class OneThingPlugin(WillPlugin):
 
     @periodic(hour='11', minute='0')
     def say_todays_thing(self):
-        self.say(todays_one_thing())
+        self.say("@steven Today's one thing: %s" % todays_one_thing())
