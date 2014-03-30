@@ -39,17 +39,16 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
         print self.load(TRAINING_FLUID_RESPONSE_SENT_KEY, None)
         print self.load(TRAINING_FLUID_RESPONSE_SENT_KEY, None) is False
         if self.load(TRAINING_FLUID_RESPONSE_SENT_KEY, None) is False:
-
-            start_time = self.load(TRAINING_START_TIME_KEY)
-            end_time = self.load(TRAINING_END_TIME_KEY)
-            print start_time
-            print end_time
-            print delta(start_time, end_time)
-            time = delta(start_time, end_time)[0]
-
             start_weight = self.load(TRAINING_START_WEIGHT_KEY)
             weigh_in = self.last_weigh_in()
             if weigh_in["when"] != start_weight["when"]:
+                start_time = self.load(TRAINING_START_TIME_KEY)
+                end_time = self.load(TRAINING_END_TIME_KEY)
+                time = "who knows how"
+                if start_time and end_time:
+                    time = delta(start_time, end_time)[0]
+
+
                 pounds_difference = weigh_in["weight"] - start_weight["weight"]
                 ounces = pounds_difference * 0.065
 
