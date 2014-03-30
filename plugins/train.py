@@ -56,3 +56,14 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
     @periodic(hour=17, minute=0, second=0)
     def check_weight(self):
         self.last_weigh_in()
+
+    @respond_to("weight")
+    def last_weight(self, message):
+        last_weight = self.last_weigh_in()
+        self.say("Last weight was %s lbs, %s%%, %s" % (
+            last_weight["weight"],
+            last_weight["fat"],
+            self.to_natural_day_and_time(last_weight["when"])
+        ))
+
+

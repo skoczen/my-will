@@ -43,4 +43,4 @@ class UptimePlugin(WillPlugin):
 
     @periodic(second='5')
     def sixlinks_is_up(self):
-        self._verify_url("http://www.sixlinks.org")
+        self._verify_url("http://sixlinks.org")
