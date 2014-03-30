@@ -25,5 +25,4 @@ class SkoczenMixin(object):
         r = requests.get("http://stevenskoczen.com/manual/weights/")
         weights = r.json()
         weights = [self._weight_with_real_dates(w) for w in weights["weights"]]
-        print weights
         return weights
