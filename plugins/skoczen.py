@@ -1,7 +1,12 @@
+from datetime import datetime
 import requests
 
 
 class SkoczenMixin(object):
+
+    def _weight_with_real_dates(self, weight):
+        weight["when"] = datetime.strptime(weight["when"], '%Y-%m-%dT%H:%M:%S')
+        return weight
 
     def todays_one_thing(self):
         r = requests.get("http://stevenskoczen.com/manual/one-thing/")
@@ -9,7 +14,7 @@ class SkoczenMixin(object):
 
     def last_weigh_in(self):
         r = requests.get("http://stevenskoczen.com/manual/weights/")
-        return r.json()["weights"][0]
+        return self._weight_with_real_dates(r.json()["weights"][0])
         # {
         #     "weight": "152.3",  # lbs
         #     "fat": "16.0",  # %
@@ -18,4 +23,7 @@ class SkoczenMixin(object):
 
     def weights(self):
         r = requests.get("http://stevenskoczen.com/manual/weights/")
-        return r.json()
+        weights = r.json()
+        weights = [self._weight_with_real_dates(w) for w in weights["weights"]]
+        print weights
+        return weights
