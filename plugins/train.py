@@ -50,7 +50,7 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
                 pounds_difference = weigh_in["weight"] - start_weight["weight"]
                 ounces = pounds_difference * 0.065
 
-                self.say("Last training was %s long, with %s oz fluid loss. Drink up!" % time, ounces)
+                self.say("Last training was %s long, with %s oz fluid loss. Drink up!" % (time, ounces))
                 self.clear(TRAINING_START_TIME_KEY)
                 self.clear(TRAINING_END_TIME_KEY)
                 self.set(TRAINING_FLUID_RESPONSE_SENT_KEY, True)
