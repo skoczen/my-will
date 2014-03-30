@@ -35,6 +35,9 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
 
     @periodic(second="0,30")
     def training_summary(self):
+        print "test"
+        print self.load(TRAINING_FLUID_RESPONSE_SENT_KEY, None)
+        print self.load(TRAINING_FLUID_RESPONSE_SENT_KEY, None) is False
         if self.load(TRAINING_FLUID_RESPONSE_SENT_KEY, None) is False:
 
             start_time = self.load(TRAINING_START_TIME_KEY)
