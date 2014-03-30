@@ -42,7 +42,7 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
 
             start_time = self.load(TRAINING_START_TIME_KEY)
             end_time = self.load(TRAINING_END_TIME_KEY)
-            time = delta(start_time, end_time)
+            time = delta(start_time, end_time)[0]
 
             start_weight = self.load(TRAINING_START_WEIGHT_KEY)
             weigh_in = self.last_weigh_in()
