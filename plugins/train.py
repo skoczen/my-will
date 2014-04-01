@@ -33,7 +33,7 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
         self.save(TRAINING_END_TIME_KEY, datetime.datetime.now())
         self.save(TRAINING_FLUID_RESPONSE_SENT_KEY, False)
 
-    @periodic(second="0,30")
+    @periodic(second="0")
     def training_summary(self):
         if self.load(TRAINING_FLUID_RESPONSE_SENT_KEY, None) is False:
             start_weight = self.load(TRAINING_START_WEIGHT_KEY)
