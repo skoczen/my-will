@@ -66,4 +66,11 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
             self.to_natural_day_and_time(last_weight["when"])
         ))
 
+    @respond_to("cancel workout")
+    def cancel_workout(self, message):
+        self.clear(TRAINING_START_TIME_KEY)
+        self.clear(TRAINING_END_TIME_KEY)
+        self.save(TRAINING_FLUID_RESPONSE_SENT_KEY, True)
+        self.say("Done.", message=message)
+
 
