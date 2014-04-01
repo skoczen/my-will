@@ -6,6 +6,7 @@ class SkoczenMixin(object):
 
     def _weight_with_real_dates(self, weight):
         weight["when"] = datetime.strptime(weight["when"], '%Y-%m-%dT%H:%M:%S')
+        weight["friendly_when"] = self.to_natural_day_and_time(weight["when"])
         return weight
 
     def todays_one_thing(self):

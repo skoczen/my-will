@@ -1,0 +1,6 @@
+Last weigh-ins:<br/>
+<ul>
+{% for w in weights %}
+<li>{{w.friendly_when}} - {{w.weight}}lbs, {{w.fat}}%
+{% endfor %}
+</ul>

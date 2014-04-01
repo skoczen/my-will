@@ -57,7 +57,7 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
     def check_weight(self):
         self.last_weigh_in()
 
-    @respond_to("weight")
+    @respond_to("weight$")
     def last_weight(self, message):
         last_weight = self.last_weigh_in()
         self.say("Last weight was %s lbs, %s%%, %s" % (
@@ -66,11 +66,15 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
             self.to_natural_day_and_time(last_weight["when"])
         ))
 
+    @respond_to("weights$")
+    def last_weights(self, message):
+        weights = self.weights()
+        status_text = rendered_template("weights.html", {"weights": weights})
+        self.say(status_text, message=message, html=True)
+
     @respond_to("cancel workout")
     def cancel_workout(self, message):
         self.clear(TRAINING_START_TIME_KEY)
         self.clear(TRAINING_END_TIME_KEY)
         self.save(TRAINING_FLUID_RESPONSE_SENT_KEY, True)
         self.say("Done.", message=message)
-
-
