@@ -42,5 +42,9 @@ class UptimePlugin(WillPlugin):
         self._verify_url("http://isenough.com")
 
     @periodic(second='5')
+    def poemhub_is_up(self):
+        self._verify_url("http://poemhub.org")
+
+    @periodic(second='5')
     def sixlinks_is_up(self):
         self._verify_url("http://sixlinks.org")
