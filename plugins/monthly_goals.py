@@ -25,3 +25,7 @@ class MonthlyGoalsPlugin(WillPlugin):
             self.say("@all our monthly goals:\n %s" % goals, message=message)
         else:
             self.say("No monthly goals set.", message=message)
+
+    @periodic(hour='10', minute='30',)
+    def reminder_morning_mood(self):
+        self.say("@all What's your morning mood?")
