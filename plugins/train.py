@@ -2,7 +2,7 @@ import datetime
 from natural.date import delta
 from will.plugin import WillPlugin
 from will.decorators import respond_to, periodic, hear, randomly, route, rendered_template
-from plugins.skoczen import SkoczenMixin
+from mixins.skoczen import SkoczenMixin
 
 TRAINING_START_TIME_KEY = "training_start_time"
 TRAINING_END_TIME_KEY = "training_end_time"

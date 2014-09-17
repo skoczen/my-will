@@ -1,6 +1,6 @@
 from will.plugin import WillPlugin
 from will.decorators import respond_to, periodic, hear, randomly, route, rendered_template
-from plugins.skoczen import SkoczenMixin
+from mixins.skoczen import SkoczenMixin
 
 
 class OneThingPlugin(WillPlugin, SkoczenMixin):
