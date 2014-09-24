@@ -65,7 +65,7 @@ PLUGIN_BLACKLIST = [
 
 # If will isn't accessible at localhost, you must set this for his keepalive to work.
 # Note no trailing slash.
-PUBLIC_URL = "http://will.greenkahuna.com"
+PUBLIC_URL = "http://steven-will.herokuapp.com"
 
 # Port to bind the web server to (defaults to $PORT, then 80.)
 # Set > 1024 to run without elevated permission.
