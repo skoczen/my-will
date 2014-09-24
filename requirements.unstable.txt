@@ -1,5 +1,5 @@
 boto
-will>=0.6.0
+will>=0.6.1
 github3.py
 -e git+git://github.com/smbaker/pynest.git#egg=pynest
 pyyaml
