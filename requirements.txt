@@ -8,5 +8,5 @@ numpy==1.8.0
 parsedatetime==1.1.2
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
-will==0.6.1
+will==0.5.7
 -e git://github.com/smbaker/pynest.git@94f5df4a2236b1c3275a0b8a6987acff6adc55d9#egg=pynest-dev

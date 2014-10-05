@@ -42,3 +42,5 @@ shelf.db
 .idea/*
 
 .will_codebases
+
+.DS_Store
