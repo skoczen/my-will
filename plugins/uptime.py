@@ -52,3 +52,7 @@ class UptimePlugin(WillPlugin):
     @periodic(second='5')
     def coffeehouses_is_up(self):
         self._verify_url("http://coffeehous.es")
+
+    @periodic(second='5')
+    def spicegrove_is_up(self):
+        self._verify_url("http://www.spicegrovedesigns.com")
