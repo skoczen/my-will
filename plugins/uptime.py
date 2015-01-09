@@ -22,6 +22,18 @@ class UptimePlugin(WillPlugin):
         self._verify_url("http://stevenskoczen.com")
 
     @periodic(second='5')
+    def inkandfeet_is_up(self):
+        self._verify_url("http://www.inkandfeet.com")
+
+    @periodic(second='5')
+    def inkandfeetblog_is_up(self):
+        self._verify_url("http://blog.inkandfeet.com")
+
+    @periodic(second='5')
+    def footprints_is_up(self):
+        self._verify_url("http://footprintsapp.com")
+
+    @periodic(second='5')
     def slowart_is_up(self):
         self._verify_url("http://slowartpdx.com")
 
