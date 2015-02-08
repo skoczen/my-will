@@ -50,6 +50,11 @@ class UptimePlugin(WillPlugin):
         self._verify_url("http://www.agoodcloud.com")
 
     @periodic(second='5')
+    def changemonsters_is_up(self):
+        self._verify_url("http://thechangemonsters.com/")
+
+
+    @periodic(second='5')
     def isenough_is_up(self):
         self._verify_url("http://isenough.com")
 
