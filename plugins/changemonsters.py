@@ -18,5 +18,10 @@ class ChangeMonstersPlugin(WillPlugin):
                 "@steven %(name)s set their big mountain: By %(big_mountain_timeline)s, I will %(big_mountain_goal)s.\n %(localtime)s local time." %
                 payload
             )
+        elif payload["form_class"] == "checkin":
+            self.say(
+                "@steven %(name)s did their checkin!\nDid everything: %(did_everything)s\nDid walk: %(did_walk)s\nDid meditation: %(did_meditation)s\nDid slightlyscared: %(did_slightlyscared)s\n" %
+                payload
+            )
         else:
             self.say("@steven, I wasn't sure what to do with this: %s" % payload)
