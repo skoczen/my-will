@@ -10,12 +10,12 @@ class ChangeMonstersPlugin(WillPlugin):
 
         if payload["form_class"] == "WalkForm":
             self.say(
-                "@steven %(name)s set %(pronoun)s walk cues:\nCue: %(walk_cue)ss\nRoutine: %(walk_routine)s\nReward: %(walk_reward)s" %
+                "@steven %(name)s set %(pronoun)s walk cues:\nCue: %(walk_cue)s\nRoutine: %(walk_routine)s\nReward: %(walk_reward)s \n %(localtime)s local time." %
                 payload
             )
         elif payload["form_class"] == "BigMountainForm":
             self.say(
-                "@steven %(name)s set their big mountain: By %(big_mountain_timeline)s, I will %(big_mountain_goal)s." %
+                "@steven %(name)s set their big mountain: By %(big_mountain_timeline)s, I will %(big_mountain_goal)s.\n %(localtime)s local time." %
                 payload
             )
         else:
