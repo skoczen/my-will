@@ -1,3 +1,4 @@
+import os
 # Welcome to Will's settings.
 # 
 # All of the settings here can also be specified in the environment, and should be for
@@ -77,11 +78,12 @@ PUBLIC_URL = "http://steven-will.herokuapp.com"
 # ------------------------------------------------------------------------------------
 
 # The list of rooms will should join.  Default is all rooms.
-ROOMS = ['Will and I',]
+if "WILL_ROOMS" not in os.environ:
+    ROOMS = ['Will and I', ]
 
 # The room will will talk to if the trigger is a webhook and he isn't told a specific room. 
 # Default is the first of ROOMS.
-DEFAULT_ROOM = 'Will and I'
+    DEFAULT_ROOM = 'Will and I'
 
 
 # Fully-qualified folders to look for templates in, beyond the two that 
