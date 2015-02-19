@@ -3,11 +3,11 @@ boto==2.20.1
 gevent==1.0
 github3.py==0.7.1
 heroku==0.1.4
-hiredis==0.1.2
+hiredis==0.1.4
 numpy==1.8.0
 parsedatetime==1.1.2
 pyasn1==0.1.7
 pyasn1-modules==0.0.5
-will==0.6.2
+will==0.7.1
 # -e git://github.com/skoczen/will.git@feature/test-revert-thread#egg=will
 -e git://github.com/smbaker/pynest.git@94f5df4a2236b1c3275a0b8a6987acff6adc55d9#egg=pynest-dev
