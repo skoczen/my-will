@@ -23,5 +23,10 @@ class ChangeMonstersPlugin(WillPlugin):
                 "@steven %(name)s did their checkin!\nDid everything: %(did_everything)s\nDid walk: %(did_walk)s\nDid meditation: %(did_meditation)s\nDid slightlyscared: %(did_slightlyscared)s\n" %
                 payload
             )
+        elif payload["form_class"] == "email_sent":
+            self.say(
+                "@steven %(name)s's day %(day_number)s email was sent. \n %(body)s" %
+                payload
+            )
         else:
             self.say("@steven, I wasn't sure what to do with this: %s" % payload)
