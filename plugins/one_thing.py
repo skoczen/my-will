@@ -15,6 +15,6 @@ class OneThingPlugin(WillPlugin, SkoczenMixin):
         one_thing = "%s%s" % (one_thing[0].upper(), one_thing[1:])
         self.say(one_thing, message=message)
 
-    @periodic(hour='11', minute='0')
-    def say_todays_thing(self):
-        self.say("@steven Today's one thing: %s" % self.todays_one_thing())
+    # @periodic(hour='11', minute='0')
+    # def say_todays_thing(self):
+    #     self.say("@steven Today's one thing: %s" % self.todays_one_thing())
