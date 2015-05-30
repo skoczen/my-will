@@ -56,7 +56,8 @@ PLUGINS = [
 
 # Don't load any of the plugins in this list.  Same options as above.
 PLUGIN_BLACKLIST = [
-
+    "will.plugins.productivity.bitly",   # Because it requires a BITLY_ACCESS_TOKEN key and the bitly_api library
+    "will.plugins.devops.pagerduty",  # Because it requires a PAGERDUTY_SUBDOMAIN and PAGERDUTY_API_KEY key
 ]
 
 
