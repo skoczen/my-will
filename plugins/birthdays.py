@@ -6,4 +6,4 @@ class BirthdayPlugin(WillPlugin):
 
     @periodic(month="4", day="9", minute="0", hour="0")
     def happy_birthday_from_will(self):
-        self.say("Happy Birthday!!!! :)")
+        self.say("@steven Happy Birthday!!!! :)")

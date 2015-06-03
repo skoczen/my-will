@@ -53,9 +53,9 @@ class TrainPlugin(WillPlugin, SkoczenMixin):
                 self.clear(TRAINING_END_TIME_KEY)
                 self.save(TRAINING_FLUID_RESPONSE_SENT_KEY, True)
 
-    @periodic(hour=17, minute=0, second=0)
-    def check_weight(self):
-        self.last_weigh_in()
+    # @periodic(hour=17, minute=0, second=0)
+    # def check_weight(self):
+    #     self.last_weigh_in()
 
     @respond_to("weight$")
     def last_weight(self, message):
