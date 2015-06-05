@@ -80,16 +80,16 @@ PUBLIC_URL = "http://steven-will.herokuapp.com"
 
 # The list of rooms will should join.  Default is all rooms.
 if "WILL_ROOMS" not in os.environ:
-    ROOMS = ['Will and I', ]
+    #     ROOMS = ['Will and I', ]
 
-# The room will will talk to if the trigger is a webhook and he isn't told a specific room. 
-# Default is the first of ROOMS.
+    # The room will will talk to if the trigger is a webhook and he isn't told a specific room.
+    # Default is the first of ROOMS.
     DEFAULT_ROOM = 'Will and I'
 
 
-# Fully-qualified folders to look for templates in, beyond the two that 
+# Fully-qualified folders to look for templates in, beyond the two that
 # are always included: core will's templates folder, and your project's templates folder.
-# 
+#
 # TEMPLATE_DIRS = [
 #   os.path.abspath("other_folder/templates")
 # ]
