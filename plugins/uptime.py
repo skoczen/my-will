@@ -70,9 +70,9 @@ class UptimePlugin(WillPlugin):
     def coffeehouses_is_up(self):
         self._verify_url("http://coffeehous.es")
 
-    @periodic(second='5')
-    def correlationbot_is_up(self):
-        self._verify_url("http://correlationbot.com")
+    # @periodic(second='5')
+    # def correlationbot_is_up(self):
+    #     self._verify_url("http://correlationbot.com")
 
     @periodic(second='5')
     def spicegrove_is_up(self):
