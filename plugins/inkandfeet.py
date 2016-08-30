@@ -48,9 +48,9 @@ class InkandFeetPlugin(WillPlugin):
                 self.say("Page %s of %s" % (page, total_pages), message=message)
             page += 1
 
-    @periodic(minute='0')
+    @periodic(minute='0', hour='*')
     def hourly_update_unsubscribes_in_woopra(self, message):
-        self.update_unsubscribes_in_woopra()
+        self.update_unsubscribes_in_woopra(message=message)
 
     @hear("(can you)? check( the)? unsubscribes")
     def hear_update_unsubscribes_in_woopra(self, message):
