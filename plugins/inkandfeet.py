@@ -1,8 +1,10 @@
 import requests
-import woopra
+from woopra import WoopraTracker
 from will import settings
 from will.plugin import WillPlugin
 from will.decorators import respond_to, periodic, hear, randomly, route, rendered_template
+
+woopra = WoopraTracker(settings.WOOPRA_TRACK_DOMAIN)
 
 
 class InkandFeetPlugin(WillPlugin):
@@ -23,10 +25,12 @@ class InkandFeetPlugin(WillPlugin):
                 try:
 
                     # CK is less than reliable.
-                    resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s&sort_field=cancelled_at" % (
-                        settings.CONVERTKIT_SECRET,
-                        page,
-                    ))
+                    resp = requests.get(
+                        "https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s&sort_field=cancelled_at" % (
+                            settings.CONVERTKIT_SECRET,
+                            page,
+                        )
+                    )
                 except:
                     skip = True
                     self.say("Skipping page %s.  Thanks, Convertkit. :/" % page)
@@ -39,7 +43,10 @@ class InkandFeetPlugin(WillPlugin):
                         email = u["email_address"]
 
                         woopra_resp = requests.get(
-                            'https://www.woopra.com/rest/2.4/profile?website=inkandfeet.com&email=%s' % email,
+                            'https://www.woopra.com/rest/2.4/profile?website=%s&email=%s' % (
+                                settings.WOOPRA_TRACK_DOMAIN,
+                                email,
+                            ),
                             auth=(settings.WOOPRA_APP_ID, settings.WOOPRA_KEY),
                         )
                         print woopra_resp.content
