@@ -1,0 +1,59 @@
+import requests
+import woopra
+from will import settings
+from will.plugin import WillPlugin
+from will.decorators import respond_to, periodic, hear, randomly, route, rendered_template
+
+
+class InkandFeetPlugin(WillPlugin):
+
+    def update_unsubscribes_in_woopra(self, message=None, verbose=False):
+        page = 1
+        total_pages = 99999999
+        while page < total_pages:
+            resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s" % (
+                settings.CONVERTKIT_SECRET,
+                page,
+            ))
+            try:
+                resp.json()["subscribers"]
+            except:
+                print(resp.content)
+                # CK is less than reliable.
+                resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s" % (
+                    settings.CONVERTKIT_SECRET,
+                    page,
+                ))
+
+            for u in resp.json()["subscribers"]:
+                if u["state"] != "active":
+                    # Check with woopra, mark unsubscribed if not marked.
+                    email = u["email_address"]
+
+                    woopra_resp = requests.get(
+                        'https://www.woopra.com/rest/2.4/profile?website=inkandfeet.com&email=' % email,
+                        auth=(settings.WOOPRA_APP_ID, settings.WOOPRA_KEY),
+                    )
+                    profile = woopra_resp.json()
+                    if "unsubscribed" not in profile["summary"]:
+                        # Send unsubscribed event to woopra
+                        woopra.identify(woopra.WoopraTracker.EMAIL, email)
+                        woopra.track("unsubscribe", {
+                            "state": u["state"],
+                        })
+                        if verbose:
+                            self.say("%s marked as %s" % (email, u["state"]), message=message)
+            total_pages = int(resp.json()["total_pages"])
+            if verbose:
+                self.say("Page %s of %s" % (page, total_pages), message=message)
+            page += 1
+
+    @periodic(minute='0')
+    def hourly_update_unsubscribes_in_woopra(self, message):
+        self.update_unsubscribes_in_woopra()
+
+    @hear("(can you)? check( the)? unsubscribes")
+    def hear_update_unsubscribes_in_woopra(self, message):
+        self.say("Sure thing.  Give me a minute...", message=message)
+        self.update_unsubscribes_in_woopra(message=message, verbose=True)
+        self.say("all done!", message=message)
