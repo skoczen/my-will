@@ -44,15 +44,15 @@ class InkandFeetPlugin(WillPlugin):
                         )
                         print woopra_resp.content
                         if woopra_resp.content != "profile does not exist!":
-                        profile = woopra_resp.json()
-                        if "unsubscribed" not in profile["summary"]:
-                            # Send unsubscribed event to woopra
-                            woopra.identify(woopra.WoopraTracker.EMAIL, email)
-                            woopra.track("unsubscribe", {
-                                "state": u["state"],
-                            })
-                            if verbose:
-                                print("%s marked as %s" % (email, u["state"]))
+                            profile = woopra_resp.json()
+                            if "unsubscribed" not in profile["summary"]:
+                                # Send unsubscribed event to woopra
+                                woopra.identify(woopra.WoopraTracker.EMAIL, email)
+                                woopra.track("unsubscribe", {
+                                    "state": u["state"],
+                                })
+                                if verbose:
+                                    print("%s marked as %s" % (email, u["state"]))
                 total_pages = int(resp.json()["total_pages"])
                 if verbose:
                     print("Page %s of %s" % (page, total_pages))
