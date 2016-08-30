@@ -15,37 +15,44 @@ class InkandFeetPlugin(WillPlugin):
                 settings.CONVERTKIT_SECRET,
                 page,
             ))
+            skip = False
             try:
                 resp.json()["subscribers"]
             except:
                 print(resp.content)
-                # CK is less than reliable.
-                resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s" % (
-                    settings.CONVERTKIT_SECRET,
-                    page,
-                ))
+                try:
 
-            for u in resp.json()["subscribers"]:
-                if u["state"] != "active":
-                    # Check with woopra, mark unsubscribed if not marked.
-                    email = u["email_address"]
+                    # CK is less than reliable.
+                    resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s" % (
+                        settings.CONVERTKIT_SECRET,
+                        page,
+                    ))
+                except:
+                    skip = True
+                    self.say("Skipping page %s.  Thanks, Convertkit. :/" % page)
 
-                    woopra_resp = requests.get(
-                        'https://www.woopra.com/rest/2.4/profile?website=inkandfeet.com&email=' % email,
-                        auth=(settings.WOOPRA_APP_ID, settings.WOOPRA_KEY),
-                    )
-                    profile = woopra_resp.json()
-                    if "unsubscribed" not in profile["summary"]:
-                        # Send unsubscribed event to woopra
-                        woopra.identify(woopra.WoopraTracker.EMAIL, email)
-                        woopra.track("unsubscribe", {
-                            "state": u["state"],
-                        })
-                        if verbose:
-                            self.say("%s marked as %s" % (email, u["state"]), message=message)
-            total_pages = int(resp.json()["total_pages"])
-            if verbose:
-                self.say("Page %s of %s" % (page, total_pages), message=message)
+            if not skip:
+                for u in resp.json()["subscribers"]:
+                    if u["state"] != "active":
+                        # Check with woopra, mark unsubscribed if not marked.
+                        email = u["email_address"]
+
+                        woopra_resp = requests.get(
+                            'https://www.woopra.com/rest/2.4/profile?website=inkandfeet.com&email=' % email,
+                            auth=(settings.WOOPRA_APP_ID, settings.WOOPRA_KEY),
+                        )
+                        profile = woopra_resp.json()
+                        if "unsubscribed" not in profile["summary"]:
+                            # Send unsubscribed event to woopra
+                            woopra.identify(woopra.WoopraTracker.EMAIL, email)
+                            woopra.track("unsubscribe", {
+                                "state": u["state"],
+                            })
+                            if verbose:
+                                self.say("%s marked as %s" % (email, u["state"]), message=message)
+                total_pages = int(resp.json()["total_pages"])
+                if verbose:
+                    self.say("Page %s of %s" % (page, total_pages), message=message)
             page += 1
 
     @periodic(minute='0', hour='*')
