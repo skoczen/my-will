@@ -49,12 +49,12 @@ class InkandFeetPlugin(WillPlugin):
                             ),
                             auth=(settings.WOOPRA_APP_ID, settings.WOOPRA_KEY),
                         )
-                        print woopra_resp.content
+                        # print woopra_resp.content
                         if woopra_resp.content != "profile does not exist!":
                             profile = woopra_resp.json()
                             if "unsubscribed" not in profile["summary"]:
                                 # Send unsubscribed event to woopra
-                                woopra.identify(woopra.WoopraTracker.EMAIL, email)
+                                woopra.identify(WoopraTracker.EMAIL, email)
                                 woopra.track("unsubscribe", {
                                     "state": u["state"],
                                 })
