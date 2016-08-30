@@ -30,6 +30,10 @@ class UptimePlugin(WillPlugin):
         self._verify_url("http://blog.inkandfeet.com")
 
     @periodic(second='5')
+    def lifeplan_is_up(self):
+        self._verify_url("https://two-year-life-plan.teachery.co")
+
+    @periodic(second='5')
     def footprints_is_up(self):
         self._verify_url("http://footprintsapp.com")
 
