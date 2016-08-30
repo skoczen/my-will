@@ -39,7 +39,7 @@ class InkandFeetPlugin(WillPlugin):
                         email = u["email_address"]
 
                         woopra_resp = requests.get(
-                            'https://www.woopra.com/rest/2.4/profile?website=inkandfeet.com&email=' % email,
+                            'https://www.woopra.com/rest/2.4/profile?website=inkandfeet.com&email=%s' % email,
                             auth=(settings.WOOPRA_APP_ID, settings.WOOPRA_KEY),
                         )
                         profile = woopra_resp.json()
