@@ -42,6 +42,7 @@ class InkandFeetPlugin(WillPlugin):
                             'https://www.woopra.com/rest/2.4/profile?website=inkandfeet.com&email=%s' % email,
                             auth=(settings.WOOPRA_APP_ID, settings.WOOPRA_KEY),
                         )
+                        print woopra_resp.content
                         profile = woopra_resp.json()
                         if "unsubscribed" not in profile["summary"]:
                             # Send unsubscribed event to woopra
