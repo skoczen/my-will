@@ -11,7 +11,7 @@ class InkandFeetPlugin(WillPlugin):
         page = 1
         total_pages = 99999999
         while page < total_pages:
-            resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s" % (
+            resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s&sort_field=cancelled_at" % (
                 settings.CONVERTKIT_SECRET,
                 page,
             ))
@@ -23,7 +23,7 @@ class InkandFeetPlugin(WillPlugin):
                 try:
 
                     # CK is less than reliable.
-                    resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%ssort_field=cancelled_at" % (
+                    resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s&sort_field=cancelled_at" % (
                         settings.CONVERTKIT_SECRET,
                         page,
                     ))
