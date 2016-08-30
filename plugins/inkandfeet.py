@@ -23,7 +23,7 @@ class InkandFeetPlugin(WillPlugin):
                 try:
 
                     # CK is less than reliable.
-                    resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%s" % (
+                    resp = requests.get("https://api.convertkit.com/v3/subscribers?api_secret=%s&page=%ssort_field=cancelled_at" % (
                         settings.CONVERTKIT_SECRET,
                         page,
                     ))
