@@ -33,6 +33,7 @@ class InkandFeetPlugin(WillPlugin):
 
             if not skip:
                 for u in resp.json()["subscribers"]:
+                    print u["state"]
                     if u["state"] != "active":
                         # Check with woopra, mark unsubscribed if not marked.
                         email = u["email_address"]
@@ -49,10 +50,10 @@ class InkandFeetPlugin(WillPlugin):
                                 "state": u["state"],
                             })
                             if verbose:
-                                self.say("%s marked as %s" % (email, u["state"]), message=message)
+                                print("%s marked as %s" % (email, u["state"]))
                 total_pages = int(resp.json()["total_pages"])
                 if verbose:
-                    self.say("Page %s of %s" % (page, total_pages), message=message)
+                    print("Page %s of %s" % (page, total_pages))
             page += 1
 
     @periodic(minute='0', hour='*')
