@@ -33,9 +33,9 @@ class UptimePlugin(WillPlugin):
     def lifeplan_is_up(self):
         self._verify_url("https://two-year-life-plan.teachery.co")
 
-    @periodic(second='5')
-    def footprints_is_up(self):
-        self._verify_url("http://footprintsapp.com")
+    # @periodic(second='5')
+    # def footprints_is_up(self):
+    #     self._verify_url("http://footprintsapp.com")
 
     @periodic(second='5')
     def slowart_is_up(self):
