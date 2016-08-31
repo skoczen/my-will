@@ -37,7 +37,8 @@ class InkandFeetPlugin(WillPlugin):
 
             if not skip:
                 for u in resp.json()["subscribers"]:
-                    print u["state"]
+                    # print u["state"]
+                    # print u
                     if u["state"] != "active":
                         # Check with woopra, mark unsubscribed if not marked.
                         email = u["email_address"]
