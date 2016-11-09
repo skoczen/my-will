@@ -78,6 +78,6 @@ class UptimePlugin(WillPlugin):
     # def correlationbot_is_up(self):
     #     self._verify_url("http://correlationbot.com")
 
-    @periodic(second='5')
-    def spicegrove_is_up(self):
-        self._verify_url("http://www.spicegrovedesigns.com")
+    # @periodic(second='5')
+    # def spicegrove_is_up(self):
+    #     self._verify_url("http://www.spicegrovedesigns.com")
