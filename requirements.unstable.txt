@@ -1,5 +1,5 @@
 boto
-will>=0.8.1
+-e git://github.com/skoczen/will.git@feature/word-game#egg=will
 github3.py
 -e git+git://github.com/smbaker/pynest.git#egg=pynest
 pyyaml
