@@ -86,6 +86,7 @@ if "WILL_ROOMS" not in os.environ:
     # Default is the first of ROOMS.
     DEFAULT_ROOM = 'Will and I'
 
+CHAT_BACKENDS = ["hipchat", ]
 
 # Fully-qualified folders to look for templates in, beyond the two that
 # are always included: core will's templates folder, and your project's templates folder.
